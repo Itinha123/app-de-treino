@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#191919" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Finanças Blindadas • Controle Pessoal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            notion: {
+              bg: '#191919',
+              card: '#202020',
+              hover: '#2a2a2a',
+              border: '#2f2f2f',
+              text: '#ebebeb',
+              muted: '#9b9b9b'
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body {
+      background-color: #191919;
+      color: #ebebeb;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #191919; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col pb-24">
+
+  <!-- TOP HEADER -->
+  <header class="sticky top-0 z-30 bg-[#191919]/95 backdrop-blur border-b border-notion-border px-4 py-3">
+    <div class="max-w-lg mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <h1 class="text-base font-bold tracking-tight">Finanças Blindadas</h1>
+      </div>
+      <div class="flex items-center gap-2">
+        <span id="currentMonthYear" class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-notion-card border border-notion-border text-notion-text"></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 max-w-lg w-full mx-auto px-4 pt-4 space-y-5">
+
+    <!-- RESUMO DOS 3 BOLSOS -->
+    <div class="grid grid-cols-3 gap-2.5">
+      <div class="bg-notion-card border border-rose-500/30 rounded-2xl p-3 flex flex-col justify-between">
+        <div>
+          <span class="text-[10px] uppercase font-bold text-rose-400 tracking-wider">Contas</span>
+          <div class="text-xs text-notion-muted">Meta: R$ 1.100</div>
+        </div>
+        <div class="mt-2">
+          <div id="statBillsPaid" class="text-sm font-extrabold text-white">R$ 0,00</div>
+          <span class="text-[10px] text-notion-muted">pagas no mês</span>
+        </div>
+      </div>
+
+      <div class="bg-notion-card border border-amber-500/30 rounded-2xl p-3 flex flex-col justify-between">
+        <div>
+          <span class="text-[10px] uppercase font-bold text-amber-400 tracking-wider">Lazer / Uber</span>
+          <div class="text-xs text-notion-muted">Teto: R$ 150</div>
+        </div>
+        <div class="mt-2">
+          <div id="statFunRemaining" class="text-sm font-extrabold text-amber-400">R$ 0,00</div>
+          <span class="text-[10px] text-notion-muted">disponível</span>
+        </div>
+      </div>
+
+      <div class="bg-notion-card border border-emerald-500/30 rounded-2xl p-3 flex flex-col justify-between">
+        <div>
+          <span class="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">Guardado</span>
+          <div class="text-xs text-notion-muted">Intocável (7,4%)</div>
+        </div>
+        <div class="mt-2">
+          <div id="statVaultTotal" class="text-sm font-extrabold text-emerald-400">R$ 0,00</div>
+          <span class="text-[10px] text-notion-muted">acumulado</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CALCULADORA DE PIX RECEBIDO -->
+    <div class="bg-gradient-to-br from-emerald-950/40 via-notion-card to-notion-card border border-emerald-500/40 rounded-2xl p-4 space-y-3.5">
+      <div class="flex items-center justify-between">
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">Regra dos 3 Bolsos</span>
+          <h2 class="text-sm font-bold text-white mt-1">Caiu Pix? Dividir Agora</h2>
+        </div>
+        <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+
+      <div class="flex gap-2">
+        <div class="relative flex-1">
+          <span class="absolute left-3 top-2.5 text-xs font-bold text-notion-muted">R$</span>
+          <input type="number" id="pixInput" step="any" placeholder="Ex: 350,00" class="w-full bg-[#141414] border border-notion-border rounded-xl pl-9 pr-3 py-2 text-sm text-white font-bold focus:outline-none focus:border-emerald-500" />
+        </div>
+        <button onclick="calculateAndApplyPix()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition shrink-0">
+          Calcular & Ratear
+        </button>
+      </div>
+
+      <!-- RESULTADO DO CÁLCULO PROPORCIONAL -->
+      <div id="pixSplitResult" class="hidden space-y-2 pt-2 border-t border-notion-border">
+        <div class="text-[11px] text-notion-muted">Destine imediatamente no Nubank:</div>
+        <div class="space-y-1.5 text-xs">
+          <div class="flex justify-between items-center bg-[#161616] border border-rose-500/20 px-3 py-2 rounded-lg">
+            <span class="text-rose-300 font-medium">1. Caixinha "Contas" (81,48%)</span>
+            <span id="splitBillsVal" class="font-extrabold text-white">R$ 0,00</span>
+          </div>
+          <div class="flex justify-between items-center bg-[#161616] border border-amber-500/20 px-3 py-2 rounded-lg">
+            <span class="text-amber-300 font-medium">2. Saldo Livre / Lazer (11,11%)</span>
+            <span id="splitFunVal" class="font-extrabold text-white">R$ 0,00</span>
+          </div>
+          <div class="flex justify-between items-center bg-[#161616] border border-emerald-500/20 px-3 py-2 rounded-lg">
+            <span class="text-emerald-300 font-medium">3. Caixinha "Reserva Intocável" (7,41%)</span>
+            <span id="splitVaultVal" class="font-extrabold text-white">R$ 0,00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTAS FIXAS & RADAR DE VENCIMENTOS (R$ 1.100) -->
+    <div class="bg-notion-card border border-notion-border rounded-2xl p-4 space-y-3.5">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-bold text-white">Contas Fixas do Mês</h3>
+          <p class="text-[11px] text-notion-muted">Marque as contas assim que pagar no app do banco</p>
+        </div>
+        <div class="text-right">
+          <span id="billsProgressLabel" class="text-xs font-bold text-rose-400">R$ 0 / R$ 1.100</span>
+        </div>
+      </div>
+
+      <!-- BARRA DE PROGRESSO DAS CONTAS -->
+      <div class="w-full bg-[#141414] h-2 rounded-full overflow-hidden">
+        <div id="billsProgressBar" class="bg-rose-500 h-full transition-all duration-300" style="width: 0%"></div>
+      </div>
+
+      <!-- LISTA DE CONTAS COM CHECKBOX -->
+      <div id="billsList" class="space-y-2 pt-1"></div>
+    </div>
+
+    <!-- CARTEIRA DE LAZER & GASTOS RÁPIDOS -->
+    <div class="bg-notion-card border border-notion-border rounded-2xl p-4 space-y-3.5">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-bold text-white">Gastos de Lazer & Dia a Dia</h3>
+          <p class="text-[11px] text-notion-muted">Prioridade: Uber e saídas • Zero salgado e refri</p>
+        </div>
+        <span id="funStatusBadge" class="text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider"></span>
+      </div>
+
+      <!-- BOTÕES DE ATALHO RÁPIDO -->
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="quickAddExpense('🚗 Corrida Uber', 15)" class="flex items-center justify-between p-2.5 rounded-xl bg-[#161616] border border-notion-border hover:border-amber-500/40 transition text-left">
+          <span class="text-xs font-bold text-white">🚗 Uber Padrão</span>
+          <span class="text-xs font-bold text-amber-400">- R$ 15</span>
+        </button>
+        <button onclick="quickAddExpense('🚗 Corrida Uber', 25)" class="flex items-center justify-between p-2.5 rounded-xl bg-[#161616] border border-notion-border hover:border-amber-500/40 transition text-left">
+          <span class="text-xs font-bold text-white">🚗 Uber Longo</span>
+          <span class="text-xs font-bold text-amber-400">- R$ 25</span>
+        </button>
+      </div>
+
+      <!-- FORMULÁRIO DE GASTO PERSONALIZADO -->
+      <div class="flex gap-2 pt-1">
+        <input type="text" id="customExpenseDesc" placeholder="Descrição (ex: Saída sábado)" class="flex-1 bg-[#141414] border border-notion-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500" />
+        <input type="number" id="customExpenseAmount" step="any" placeholder="R$" class="w-20 bg-[#141414] border border-notion-border rounded-xl px-2.5 py-2 text-xs text-white font-bold focus:outline-none focus:border-amber-500" />
+        <button onclick="addCustomExpense()" class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs transition">
+          Lançar
+        </button>
+      </div>
+
+      <!-- HISTÓRICO DE GASTOS DO MÊS -->
+      <div class="pt-2">
+        <div class="text-[11px] font-bold text-notion-muted uppercase mb-2">Histórico do Mês Atual</div>
+        <div id="expenseHistoryList" class="space-y-1.5 max-h-48 overflow-y-auto"></div>
+      </div>
+    </div>
+
+    <!-- COFRE DA RESERVA INTOCÁVEL -->
+    <div class="bg-notion-card border border-emerald-500/30 rounded-2xl p-4 space-y-3">
+      <div class="flex items-center justify-between">
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Cofre de Segurança (100% CDI)</span>
+          <h3 class="text-sm font-bold text-white mt-0.5">Reserva Intocável Acumulada</h3>
+        </div>
+        <span class="text-xs px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 font-bold">Blindado</span>
+      </div>
+      <p class="text-xs text-notion-muted leading-relaxed">
+        Cada centavo aqui foi retirado antes de qualquer gasto livre. Este dinheiro é a base da sua tranquilidade para que você nunca precise pedir adiantamentos ou empréstimos.
+      </p>
+      <div class="flex items-center justify-between bg-[#141414] border border-notion-border rounded-xl p-3">
+        <span class="text-xs text-notion-muted">Saldo Total no Cofre:</span>
+        <span id="vaultDisplayBig" class="text-base font-extrabold text-emerald-400">R$ 0,00</span>
+      </div>
+    </div>
+
+    <!-- BOTÕES DE GESTÃO E FECHAMENTO -->
+    <div class="flex gap-2 pt-2">
+      <button onclick="resetMonthCycle()" class="flex-1 py-2.5 rounded-xl bg-notion-hover border border-notion-border text-xs font-semibold text-notion-muted hover:text-white transition">
+        Iniciar Novo Mês
+      </button>
+      <button onclick="exportFinancialBackup()" class="px-3.5 py-2.5 rounded-xl bg-notion-hover border border-notion-border text-xs font-semibold text-notion-muted hover:text-white transition">
+        Exportar Backup
+      </button>
+    </div>
+
+  </main>
+
+  <script>
+    // CONFIGURAÇÃO FIXA DAS SUAS CONTAS (TOTAL: R$ 1.100)
+    const FIXED_BILLS = [
+      { id: 'aluguel', name: 'Aluguel (Começo do Mês)', value: 500, priority: 1, dueDate: 'Dia 05' },
+      { id: 'ru', name: 'Ticket RU UFU (Almoço + Janta)', value: 132, priority: 2, dueDate: 'Início do mês' },
+      { id: 'mercado', name: 'Mercado Essencial (Ovos, Aveia, Frutas)', value: 150, priority: 3, dueDate: 'Ao longo do mês' },
+      { id: 'academia', name: 'Academia (Mensalidade)', value: 130, priority: 4, dueDate: 'Recorrente' },
+      { id: 'whey', name: 'Whey Protein (Suporte Proteico)', value: 80, priority: 5, dueDate: 'Reposição' },
+      { id: 'cabelereiro', name: 'Cabeleireiro', value: 45, priority: 6, dueDate: 'Mensal' },
+      { id: 'google', name: 'Planos Google', value: 30, priority: 7, dueDate: 'Assinatura' }
+    ];
+
+    const TOTAL_BILLS_TARGET = 1100;
+    const TOTAL_FUN_TARGET = 150;
+    const TOTAL_BASE = 1350;
+
+    const STORAGE_KEY = 'financas_blindadas_db_v1';
+
+    let finDb = loadFinDb();
+
+    function getMonthKey() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    function loadFinDb() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const data = raw ? JSON.parse(raw) : {};
+        if (!data.months) data.months = {};
+        if (!data.vaultTotal) data.vaultTotal = 0;
+        return data;
+      } catch (e) {
+        return { months: {}, vaultTotal: 0 };
+      }
+    }
+
+    function saveFinDb() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(finDb));
+    }
+
+    function getCurrentMonthData() {
+      const mKey = getMonthKey();
+      if (!finDb.months[mKey]) {
+        finDb.months[mKey] = {
+          paidBills: {},
+          funBudget: TOTAL_FUN_TARGET,
+          expenses: [],
+          pixHistory: []
+        };
+      }
+      return finDb.months[mKey];
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const d = new Date();
+      const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+      document.getElementById('currentMonthYear').textContent = `${monthNames[d.getMonth()]} de ${d.getFullYear()}`;
+      renderAll();
+    });
+
+    function formatCurrency(val) {
+      return (Number(val) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function calculateAndApplyPix() {
+      const input = document.getElementById('pixInput');
+      const val = parseFloat(input.value);
+
+      if (isNaN(val) || val <= 0) {
+        alert('Digite um valor válido de Pix.');
+        return;
+      }
+
+      // Proporções: 1100/1350 contas, 150/1350 lazer, 100/1350 reserva
+      const billsShare = (val * (TOTAL_BILLS_TARGET / TOTAL_BASE));
+      const funShare = (val * (TOTAL_FUN_TARGET / TOTAL_BASE));
+      const vaultShare = (val * (100 / TOTAL_BASE));
+
+      document.getElementById('splitBillsVal').textContent = formatCurrency(billsShare);
+      document.getElementById('splitFunVal').textContent = formatCurrency(funShare);
+      document.getElementById('splitVaultVal').textContent = formatCurrency(vaultShare);
+      document.getElementById('pixSplitResult').classList.remove('hidden');
+
+      // Atualiza o cofre de longo prazo
+      finDb.vaultTotal += vaultShare;
+
+      // Adiciona ao registro do mês
+      const mData = getCurrentMonthData();
+      mData.pixHistory.push({
+        date: new Date().toLocaleDateString('pt-BR'),
+        amount: val,
+        vaultShare
+      });
+
+      saveFinDb();
+      renderAll();
+      input.value = '';
+    }
+
+    function toggleBillPayment(billId) {
+      const mData = getCurrentMonthData();
+      mData.paidBills[billId] = !mData.paidBills[billId];
+      saveFinDb();
+      renderAll();
+    }
+
+    function quickAddExpense(desc, amount) {
+      addExpenseRecord(desc, amount);
+    }
+
+    function addCustomExpense() {
+      const descInput = document.getElementById('customExpenseDesc');
+      const amountInput = document.getElementById('customExpenseAmount');
+      const desc = descInput.value.trim() || 'Gasto Avulso';
+      const amount = parseFloat(amountInput.value);
+
+      if (isNaN(amount) || amount <= 0) {
+        alert('Digite um valor válido.');
+        return;
+      }
+
+      addExpenseRecord(desc, amount);
+      descInput.value = '';
+      amountInput.value = '';
+    }
+
+    function addExpenseRecord(desc, amount) {
+      const mData = getCurrentMonthData();
+      mData.expenses.unshift({
+        id: Date.now(),
+        desc,
+        amount,
+        time: new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+      });
+      saveFinDb();
+      renderAll();
+    }
+
+    function removeExpense(id) {
+      const mData = getCurrentMonthData();
+      mData.expenses = mData.expenses.filter(e => e.id !== id);
+      saveFinDb();
+      renderAll();
+    }
+
+    function renderAll() {
+      const mData = getCurrentMonthData();
+
+      // 1. Contas Fixas
+      let paidTotal = 0;
+      const billsListEl = document.getElementById('billsList');
+      billsListEl.innerHTML = '';
+
+      FIXED_BILLS.forEach(b => {
+        const isPaid = !!mData.paidBills[b.id];
+        if (isPaid) paidTotal += b.value;
+
+        const row = document.createElement('div');
+        row.className = `flex items-center justify-between p-2.5 rounded-xl border transition cursor-pointer ${
+          isPaid ? 'bg-emerald-950/20 border-emerald-500/40 text-emerald-200' : 'bg-[#161616] border-notion-border text-white'
+        }`;
+        row.onclick = () => toggleBillPayment(b.id);
+        row.innerHTML = `
+          <div class="flex items-center gap-2.5">
+            <input type="checkbox" ${isPaid ? 'checked' : ''} class="w-4 h-4 rounded text-emerald-500 pointer-events-none" />
+            <div>
+              <div class="text-xs font-bold ${isPaid ? 'line-through text-notion-muted' : ''}">${b.name}</div>
+              <div class="text-[10px] text-notion-muted">${b.dueDate}</div>
+            </div>
+          </div>
+          <span class="text-xs font-extrabold ${isPaid ? 'text-emerald-400' : 'text-rose-400'}">${formatCurrency(b.value)}</span>
+        `;
+        billsListEl.appendChild(row);
+      });
+
+      document.getElementById('statBillsPaid').textContent = formatCurrency(paidTotal);
+      document.getElementById('billsProgressLabel').textContent = `${formatCurrency(paidTotal)} / ${formatCurrency(TOTAL_BILLS_TARGET)}`;
+      const billsPct = Math.min(100, (paidTotal / TOTAL_BILLS_TARGET) * 100);
+      document.getElementById('billsProgressBar').style.width = `${billsPct}%`;
+
+      // 2. Lazer / Uber
+      let expensesTotal = 0;
+      mData.expenses.forEach(e => expensesTotal += Number(e.amount || 0));
+      const remainingFun = TOTAL_FUN_TARGET - expensesTotal;
+
+      document.getElementById('statFunRemaining').textContent = formatCurrency(remainingFun);
+      const funBadge = document.getElementById('funStatusBadge');
+      if (remainingFun >= 50) {
+        funBadge.textContent = 'Orçamento Seguro';
+        funBadge.className = 'text-[10px] px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30';
+      } else if (remainingFun > 0) {
+        funBadge.textContent = 'Atenção ao Limite';
+        funBadge.className = 'text-[10px] px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30';
+      } else {
+        funBadge.textContent = 'Limite Atingido';
+        funBadge.className = 'text-[10px] px-2 py-0.5 rounded bg-rose-500/15 text-rose-300 border border-rose-500/30';
+      }
+
+      // Histórico de despesas de lazer
+      const expListEl = document.getElementById('expenseHistoryList');
+      if (mData.expenses.length === 0) {
+        expListEl.innerHTML = `<div class="text-center py-3 text-xs text-notion-muted">Nenhum gasto de lazer registrado.</div>`;
+      } else {
+        expListEl.innerHTML = '';
+        mData.expenses.forEach(e => {
+          const item = document.createElement('div');
+          item.className = 'flex items-center justify-between py-1.5 px-2 rounded-lg bg-[#141414] border border-notion-border text-xs';
+          item.innerHTML = `
+            <div>
+              <span class="font-medium text-white">${e.desc}</span>
+              <span class="text-[10px] text-notion-muted ml-1.5">${e.time}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-amber-400">-${formatCurrency(e.amount)}</span>
+              <button onclick="removeExpense(${e.id})" class="text-notion-muted hover:text-rose-400 text-sm leading-none">&times;</button>
+            </div>
+          `;
+          expListEl.appendChild(item);
+        });
+      }
+
+      // 3. Reserva Intocável Acumulada
+      document.getElementById('statVaultTotal').textContent = formatCurrency(finDb.vaultTotal);
+      document.getElementById('vaultDisplayBig').textContent = formatCurrency(finDb.vaultTotal);
+    }
+
+    function resetMonthCycle() {
+      if (!confirm('Deseja reiniciar as contas e o saldo de lazer para um novo mês? A sua Reserva Intocável acumulada será mantida intacta.')) return;
+      const mKey = getMonthKey();
+      finDb.months[mKey] = {
+        paidBills: {},
+        funBudget: TOTAL_FUN_TARGET,
+        expenses: [],
+        pixHistory: []
+      };
+      saveFinDb();
+      renderAll();
+    }
+
+    function exportFinancialBackup() {
+      const blob = new Blob([JSON.stringify(finDb, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `backup-financas-${getMonthKey()}.json`;
+      a.click();
+    }
+  </script>
+</body>
+</html>
