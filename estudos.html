@@ -40,352 +40,421 @@
     }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #121212; }
+    ::-webkit-scrollbar-thumb { background: #2e3036; border-radius: 3px; }
   </style>
 </head>
-<body class="min-h-screen flex flex-col pb-24">
+<body class="min-h-screen flex flex-col lg:flex-row pb-24 lg:pb-8">
 
-  <!-- BANNER DE INSTALAÇÃO DO APP (APARECE AUTOMATICAMENTE SE DISPONÍVEL) -->
-  <div id="installAppBanner" class="hidden bg-indigo-600 text-white px-4 py-2.5 text-sm font-medium flex items-center justify-between">
-    <span>📲 Instale o aplicativo em tela cheia no celular</span>
-    <button onclick="triggerPwaInstall()" class="px-3 py-1 rounded-lg bg-white text-indigo-700 font-bold text-xs">Instalar App</button>
+  <!-- =========================================================================== -->
+  <!-- SIDEBAR EXCLUSIVA PARA NOTEBOOK / PC (OCULTA NO CELULAR)                    -->
+  <!-- =========================================================================== -->
+  <aside class="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-gdark-card border-r border-gdark-border p-4 justify-between z-40">
+    <div class="space-y-6">
+      <!-- LOGO E TÍTULO -->
+      <div class="flex items-center justify-between px-2 pt-1">
+        <div class="flex items-center gap-2.5">
+          <span class="w-3 h-3 rounded-full bg-blue-500 animate-pulse"></span>
+          <div>
+            <h1 class="text-base font-extrabold text-white tracking-tight">UFU Hub</h1>
+            <p class="text-[11px] text-gdark-muted">Mecatrônica • 2026/2</p>
+          </div>
+        </div>
+        <button onclick="openGlobalSettings('config')" class="p-2 rounded-xl bg-gdark-pill hover:bg-neutral-700 text-sm" title="Configurações">⚙️</button>
+      </div>
+
+      <!-- MENU PRINCIPAL -->
+      <nav class="space-y-1.5">
+        <div class="px-2 text-[10px] font-bold uppercase tracking-wider text-gdark-muted mb-1">Navegação</div>
+        <button onclick="navigateMainView('discover')" id="sideNav-discover" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-sm font-bold bg-blue-600/20 text-blue-400 border border-blue-500/30 transition">
+          <span>🏠</span> <span>Início & Feed</span>
+        </button>
+        <button onclick="navigateMainView('routine')" id="sideNav-routine" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold text-gdark-text hover:bg-gdark-pill transition">
+          <span>⚡</span> <span>Rotina & Horários</span>
+        </button>
+        <button onclick="navigateMainView('studies')" id="sideNav-studies" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold text-gdark-text hover:bg-gdark-pill transition">
+          <span>📚</span> <span>Estudos & IA</span>
+        </button>
+      </nav>
+
+      <!-- ATALHOS RÁPIDOS DOS PILARES -->
+      <div class="space-y-1.5">
+        <div class="px-2 text-[10px] font-bold uppercase tracking-wider text-gdark-muted mb-1">Pilares Diários</div>
+        <a href="index.html" class="flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-semibold text-gdark-text hover:bg-gdark-pill transition">
+          <span>🏋️‍♂️ Treino</span> <span class="text-gdark-muted">06:30</span>
+        </a>
+        <a href="dieta.html" class="flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-semibold text-gdark-text hover:bg-gdark-pill transition">
+          <span>🥗 Dieta & Água</span> <span class="text-gdark-muted">140g / 3L</span>
+        </a>
+        <a href="financas.html" class="flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-semibold text-gdark-text hover:bg-gdark-pill transition">
+          <span>💰 Finanças</span> <span class="text-gdark-muted">3 Bolsos</span>
+        </a>
+      </div>
+
+      <!-- SEUS CADERNOS DO NOTEBOOKLM -->
+      <div class="space-y-1.5">
+        <div class="px-2 text-[10px] font-bold uppercase tracking-wider text-gdark-muted mb-1">Seus Cadernos NotebookLM</div>
+        <div class="space-y-1 max-h-48 overflow-y-auto pr-1 text-xs">
+          <a href="https://gemini.google.com/notebook/38948cf6-3148-43cd-aa5d-009d0fe60707" target="_blank" class="block px-3 py-1.5 rounded-xl hover:bg-gdark-pill text-gdark-text truncate">💻 Algoritmos</a>
+          <a href="https://gemini.google.com/notebook/8d7673c0-ec6c-48b4-a5ee-07087456546a" target="_blank" class="block px-3 py-1.5 rounded-xl hover:bg-gdark-pill text-gdark-text truncate">📚 Cálculo 2</a>
+          <a href="https://gemini.google.com/notebook/f451a3f3-ef65-4e3b-8b26-9dcfbd24dc21" target="_blank" class="block px-3 py-1.5 rounded-xl hover:bg-gdark-pill text-gdark-text truncate">💻 Física</a>
+          <a href="https://gemini.google.com/notebook/0477ab75-8ae9-4e70-948c-d3095c58597a" target="_blank" class="block px-3 py-1.5 rounded-xl hover:bg-gdark-pill text-gdark-text truncate">🔢 Algebra linear</a>
+          <a href="https://gemini.google.com/notebook/dc3c13e4-440a-41ab-b577-5f6c7c55ed29" target="_blank" class="block px-3 py-1.5 rounded-xl hover:bg-gdark-pill text-gdark-text truncate">📊 Estatística</a>
+          <a href="https://gemini.google.com/notebook/0397642a-e56e-4649-8a86-bf933fee7117" target="_blank" class="block px-3 py-1.5 rounded-xl hover:bg-gdark-pill text-gdark-text truncate">📐 geometria analítica</a>
+          <a href="https://gemini.google.com/notebook/5e031a1d-79c3-46c9-aae9-a55a83567272" target="_blank" class="block px-3 py-1.5 rounded-xl hover:bg-gdark-pill text-gdark-text truncate">🧪 Lab.Física</a>
+          <a href="https://gemini.google.com/notebook/9ba21446-cc3f-4d99-aca0-b2aaa997dd60" target="_blank" class="block px-3 py-1.5 rounded-xl hover:bg-gdark-pill text-gdark-text truncate">✅ ST</a>
+          <a href="https://gemini.google.com/notebook/42b0d843-816d-4fac-8159-58455c795dca" target="_blank" class="block px-3 py-1.5 rounded-xl hover:bg-gdark-pill text-gdark-text truncate">📟 Robô seguidor de linha</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="pt-4 border-t border-gdark-border flex items-center justify-between text-xs text-gdark-muted px-2">
+      <button onclick="openGlobalSettings('saved')" class="hover:text-white font-semibold">❤️ Salvos</button>
+      <button onclick="openGlobalSettings('notifications')" class="hover:text-white font-semibold">📲 Avisos</button>
+    </div>
+  </aside>
+
+  <!-- CONTAINER GERAL QUE SE EXPANDE NO NOTEBOOK (lg:pl-64) -->
+  <div class="flex-1 lg:pl-64 w-full">
+
+    <!-- BANNER DE INSTALAÇÃO DO APP -->
+    <div id="installAppBanner" class="hidden bg-indigo-600 text-white px-4 py-2.5 text-sm font-medium flex items-center justify-between">
+      <span>📲 Instalar aplicativo em tela cheia neste dispositivo</span>
+      <button onclick="triggerPwaInstall()" class="px-3 py-1 rounded-lg bg-white text-indigo-700 font-bold text-xs">Instalar Agora</button>
+    </div>
+
+    <!-- =========================================================================== -->
+    <!-- VISÃO 1: PÁGINA PRINCIPAL (GOOGLE DISCOVER ADAPTADO PARA CELULAR E PC)      -->
+    <!-- =========================================================================== -->
+    <main id="view-discover" class="max-w-xl lg:max-w-6xl w-full mx-auto px-4 lg:px-8 pt-4 lg:pt-6 space-y-5">
+
+      <!-- BARRA SUPERIOR ESTILO GOOGLE (CHAT GERAL IA + ENGRENAGEM) -->
+      <div class="flex items-center gap-3">
+        <div onclick="toggleQuickTopChat()" class="flex-1 bg-gdark-pill border border-gdark-border rounded-full px-5 py-3.5 flex items-center justify-between cursor-pointer shadow-md hover:border-neutral-500 transition">
+          <div class="flex items-center gap-3">
+            <span class="text-lg font-extrabold bg-gradient-to-r from-blue-400 via-red-400 to-yellow-400 bg-clip-text text-transparent">G</span>
+            <span class="text-sm text-gdark-muted">Perguntar à IA ou ver avisos de hoje...</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="unreadNotifDot" class="w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse"></span>
+            <span class="text-base">💬</span>
+          </div>
+        </div>
+
+        <button onclick="openGlobalSettings('config')" class="w-12 h-12 rounded-full bg-gdark-pill border-2 border-blue-500/60 flex items-center justify-center text-lg shadow-md hover:bg-neutral-800 transition shrink-0" title="Configurações, Salvos e Notificações">
+          ⚙️
+        </button>
+      </div>
+
+      <!-- GAVETA DO CHAT PRINCIPAL & CENTRAL DE AVISOS -->
+      <div id="quickTopChatDrawer" class="hidden bg-gdark-surface border border-gdark-border rounded-3xl p-4 lg:p-5 space-y-3 shadow-2xl">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-bold text-white">Assistente Geral & Avisos do Dia</span>
+            <button onclick="showHelpTooltip('Converse sobre qualquer assunto, receba seus lembretes de treino, água, refeições e estudos, e envie-os para o seu WhatsApp ou SMS com 1 clique.')" class="w-5 h-5 rounded-full bg-gdark-pill text-xs text-gdark-muted font-bold">?</button>
+          </div>
+          <div class="flex items-center gap-3">
+            <button onclick="openGlobalSettings('notifications')" class="text-xs text-blue-400 font-semibold">Editar Avisos</button>
+            <button onclick="toggleQuickTopChat()" class="text-gdark-muted text-xl leading-none">&times;</button>
+          </div>
+        </div>
+
+        <div id="topChatHistory" class="max-h-64 overflow-y-auto space-y-2.5 text-sm pr-1"></div>
+
+        <div class="flex gap-2 pt-1">
+          <input type="text" id="topChatInput" onkeydown="if(event.key==='Enter') sendTopChatMessage()" placeholder="Pergunte qualquer coisa à IA..." class="flex-1 bg-gdark-bg border border-gdark-border rounded-2xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500" />
+          <button onclick="sendTopChatMessage()" id="btnTopChatSend" class="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm">Enviar</button>
+        </div>
+      </div>
+
+      <!-- CARROSSEL DE QUADROS RÁPIDOS (1º QUADRO "ROTINA" + JANELAS E AULAS DO DIA) -->
+      <div class="flex gap-3 overflow-x-auto no-scrollbar py-1" id="googleQuickCardsRow"></div>
+
+      <!-- FILTRO DE CATEGORIAS COM ÍCONES (LIVRO, ROBÔ, GLOBO) -->
+      <div class="flex items-center justify-between gap-2 pt-1">
+        <div class="flex gap-2 overflow-x-auto no-scrollbar">
+          <button onclick="setFeedCategory('all')" id="catBtn-all" class="px-4 py-2 rounded-full text-sm font-semibold bg-gdark-pill border border-blue-500/50 text-white shrink-0">
+            ✨ Todas
+          </button>
+          <button onclick="setFeedCategory('ufu')" id="catBtn-ufu" class="px-4 py-2 rounded-full text-sm font-medium bg-gdark-surface border border-gdark-border text-gdark-text shrink-0">
+            📖 UFU
+          </button>
+          <button onclick="setFeedCategory('tech')" id="catBtn-tech" class="px-4 py-2 rounded-full text-sm font-medium bg-gdark-surface border border-gdark-border text-gdark-text shrink-0">
+            🤖 Tecnologia
+          </button>
+          <button onclick="setFeedCategory('politics')" id="catBtn-politics" class="px-4 py-2 rounded-full text-sm font-medium bg-gdark-surface border border-gdark-border text-gdark-text shrink-0">
+            🌐 Política
+          </button>
+        </div>
+        <button onclick="refreshLiveDiscoverFeed()" id="btnRefreshDiscover" class="p-2.5 rounded-full bg-gdark-surface border border-gdark-border text-sm shrink-0 hover:bg-gdark-pill" title="Atualizar Feed">
+          🔄
+        </button>
+      </div>
+
+      <!-- FEED GOOGLE DISCOVER: 1 COLUNA NO CELULAR, 2 OU 3 COLUNAS NO NOTEBOOK -->
+      <div id="discoverFeedList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 pt-1"></div>
+
+    </main>
+
+    <!-- =========================================================================== -->
+    <!-- VISÃO 2: PÁGINA "ROTINA" (4 QUADROS + GRADE E JANELAS LADO A LADO NO PC)    -->
+    <!-- =========================================================================== -->
+    <main id="view-routine" class="hidden max-w-xl lg:max-w-6xl w-full mx-auto px-4 lg:px-8 pt-4 lg:pt-6 space-y-6">
+
+      <div class="flex items-center justify-between">
+        <button onclick="navigateMainView('discover')" class="inline-flex items-center gap-1.5 text-sm font-semibold text-gdark-muted hover:text-white">
+          <span>&larr;</span> <span>Início</span>
+        </button>
+        <div class="flex items-center gap-2">
+          <span class="text-base lg:text-lg font-bold text-white">Central de Rotina</span>
+          <button onclick="showHelpTooltip('Acesse qualquer um dos 4 módulos principais acima ou clique na engrenagem para editar seus horários de aula e janelas livres.')" class="w-5 h-5 rounded-full bg-gdark-pill text-xs text-gdark-muted font-bold">?</button>
+        </div>
+      </div>
+
+      <!-- OS 4 QUADROS NO TOPO (2x2 NO CELULAR, 4 EM LINHA NO NOTEBOOK) -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <button onclick="navigateMainView('studies')" class="bg-gdark-surface border border-gdark-border hover:border-indigo-500/60 rounded-3xl p-4 text-left transition flex flex-col justify-between h-28 shadow-md">
+          <div class="flex items-center justify-between">
+            <span class="text-2xl">📚</span>
+            <span id="routineCardPendingBadge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300"></span>
+          </div>
+          <div>
+            <div class="text-base font-bold text-white">Estudos</div>
+            <div class="text-xs text-gdark-muted">Missão & 8 Matérias</div>
+          </div>
+        </button>
+
+        <a href="index.html" class="bg-gdark-surface border border-gdark-border hover:border-emerald-500/60 rounded-3xl p-4 text-left transition flex flex-col justify-between h-28 shadow-md">
+          <div class="flex items-center justify-between">
+            <span class="text-2xl">🏋️‍♂️</span>
+            <span class="text-xs font-semibold text-gdark-muted">06:30</span>
+          </div>
+          <div>
+            <div class="text-base font-bold text-white">Treino</div>
+            <div class="text-xs text-gdark-muted">Planilha & Cargas</div>
+          </div>
+        </a>
+
+        <a href="dieta.html" class="bg-gdark-surface border border-gdark-border hover:border-amber-500/60 rounded-3xl p-4 text-left transition flex flex-col justify-between h-28 shadow-md">
+          <div class="flex items-center justify-between">
+            <span class="text-2xl">🥗</span>
+            <span class="text-xs font-semibold text-gdark-muted">140g Prot • 3L</span>
+          </div>
+          <div>
+            <div class="text-base font-bold text-white">Dieta</div>
+            <div class="text-xs text-gdark-muted">Refeições & Água</div>
+          </div>
+        </a>
+
+        <a href="financas.html" class="bg-gdark-surface border border-gdark-border hover:border-sky-500/60 rounded-3xl p-4 text-left transition flex flex-col justify-between h-28 shadow-md">
+          <div class="flex items-center justify-between">
+            <span class="text-2xl">💰</span>
+            <span class="text-xs font-semibold text-gdark-muted">3 Bolsos</span>
+          </div>
+          <div>
+            <div class="text-base font-bold text-white">Finanças</div>
+            <div class="text-xs text-gdark-muted">Pix, Contas & Economia</div>
+          </div>
+        </a>
+      </div>
+
+      <!-- SUA AGENDA E JANELAS LIVRES DE HOJE (LADO A LADO NO NOTEBOOK) -->
+      <div class="bg-gdark-surface border border-gdark-border rounded-3xl p-5 space-y-4 shadow-md">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <h2 class="text-base lg:text-lg font-bold text-white">Sua Agenda e Janelas Livres</h2>
+            <button onclick="showHelpTooltip('Toque na engrenagem ao lado para personalizar todas as suas aulas, horários de treino/refeições e definir o início e término das janelas livres de cada dia.')" class="w-5 h-5 rounded-full bg-gdark-pill text-xs text-gdark-muted font-bold">?</button>
+          </div>
+          <div class="flex items-center gap-2">
+            <select id="routineDaySelector" onchange="renderRoutineSchedule()" class="bg-gdark-pill border border-gdark-border rounded-xl px-3 py-1.5 text-xs font-bold text-white"></select>
+            <button onclick="openScheduleEditorModal()" class="w-9 h-9 rounded-full bg-gdark-pill border border-gdark-border flex items-center justify-center text-sm hover:bg-neutral-700" title="Editar Aulas e Janelas Livres">
+              ⚙️
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 pt-1">
+          <!-- COLUNA 1: JANELAS LIVRES -->
+          <div class="space-y-2.5">
+            <div class="text-xs font-bold uppercase tracking-wider text-emerald-400">⏳ Janelas Livres de Estudo</div>
+            <div id="routineFreeWindowsBox" class="space-y-2"></div>
+          </div>
+
+          <!-- COLUNA 2: AULAS & ROTINA -->
+          <div class="space-y-2.5">
+            <div class="text-xs font-bold uppercase tracking-wider text-blue-400">🎓 Grade de Aulas & Rotina do Dia</div>
+            <div id="routineClassesTimeline" class="space-y-2"></div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- =========================================================================== -->
+    <!-- VISÃO 3: PÁGINA "ESTUDOS" (SPLIT-SCREEN NO NOTEBOOK + 8 MATÉRIAS EM 4x2)    -->
+    <!-- =========================================================================== -->
+    <main id="view-studies" class="hidden max-w-xl lg:max-w-6xl w-full mx-auto px-4 lg:px-8 pt-4 lg:pt-6 space-y-5">
+
+      <!-- TOPO DE NAVEGAÇÃO INTERNA DE ESTUDOS -->
+      <div class="flex items-center justify-between">
+        <button onclick="navigateMainView('routine')" class="inline-flex items-center gap-1.5 text-sm font-semibold text-gdark-muted hover:text-white">
+          <span>&larr;</span> <span>Rotina</span>
+        </button>
+        <div class="flex bg-gdark-surface border border-gdark-border rounded-2xl p-1 gap-1">
+          <button onclick="switchStudyTab('focus')" id="studyTabBtn-focus" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white">🎯 Foco & IA</button>
+          <button onclick="switchStudyTab('weekly')" id="studyTabBtn-weekly" class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-gdark-muted">📋 Semana</button>
+          <button onclick="switchStudyTab('subjects')" id="studyTabBtn-subjects" class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-gdark-muted">📚 Matérias (8)</button>
+        </div>
+      </div>
+
+      <!-- SUB-ABA 3A: EM TELAS DE NOTEBOOK, FICA LADO A LADO (TAREFA À ESQUERDA + CHAT IA À DIREITA) -->
+      <div id="studySub-focus" class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+
+        <!-- COLUNA ESQUERDA (7/12 NO NOTEBOOK): MODO DE EXECUÇÃO ÚNICA -->
+        <div class="lg:col-span-7 bg-gdark-surface border border-indigo-500/40 rounded-3xl p-5 space-y-4 shadow-lg w-full">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span id="studyModeBadgeTitle" class="text-xs font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300">
+                🎯 Modo de Execução Única
+              </span>
+              <button onclick="showHelpTooltip('Mostra apenas 1 tarefa por vez para evitar sobrecarga. Use o botão ☰ à direita para alternar para o Modo Véspera de Prova ou Modo Recuperação de Fim de Semana.')" class="w-5 h-5 rounded-full bg-gdark-pill text-xs text-gdark-muted font-bold">?</button>
+            </div>
+
+            <!-- MENU DE TRÊS PAUZINHOS (☰) -->
+            <div class="relative">
+              <button onclick="toggleStudyModeMenu()" class="w-9 h-9 rounded-xl bg-gdark-pill border border-gdark-border flex items-center justify-center text-base text-white hover:bg-neutral-700" title="Selecionar Modo de Estudos">
+                ☰
+              </button>
+              <div id="studyModeDropdown" class="hidden absolute right-0 mt-2 w-60 bg-gdark-card border border-gdark-border rounded-2xl shadow-2xl p-2 z-30 space-y-1 text-xs">
+                <div class="px-2.5 py-1 text-[10px] font-bold uppercase text-gdark-muted">Modo de Estudos</div>
+                <button onclick="setStudyExecutionMode('single')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-gdark-pill text-white font-semibold">
+                  🎯 1 Tarefa por Vez (Padrão)
+                </button>
+                <button onclick="setStudyExecutionMode('exam')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-gdark-pill text-white font-semibold">
+                  🔥 Modo Véspera de Prova
+                </button>
+                <button onclick="setStudyExecutionMode('recovery')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-gdark-pill text-amber-300 font-semibold">
+                  ⚠️ Modo Recuperação (Fim de Semana)
+                </button>
+                <hr class="border-gdark-border my-1" />
+                <button onclick="openTaskModal('')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-gdark-pill text-indigo-300 font-bold">
+                  + Criar Tarefa Manualmente
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div id="spotlightTaskContainer"></div>
+
+          <!-- CRONÔMETRO DE FOCO -->
+          <div class="bg-gdark-bg border border-gdark-border rounded-2xl p-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="text-xl">⏱️</span>
+              <div id="focusTimerDisplay" class="text-2xl font-mono font-extrabold text-white">50:00</div>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="toggleStudyTimer()" id="btnStudyTimer" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm">
+                ▶ Iniciar
+              </button>
+              <button onclick="resetStudyTimer()" class="px-3 py-2 rounded-xl bg-gdark-pill text-gdark-muted hover:text-white text-sm">
+                ↺
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- COLUNA DIREITA (5/12 NO NOTEBOOK): ASSISTENTE DE ESTUDOS -->
+        <div class="lg:col-span-5 bg-gdark-surface border border-gdark-border rounded-3xl p-4 lg:p-5 flex flex-col h-[430px] lg:h-[460px] shadow-md w-full">
+          <div class="flex items-center justify-between pb-3 border-b border-gdark-border">
+            <div class="flex items-center gap-2">
+              <span class="text-base">🤖</span>
+              <h3 class="text-base font-bold text-white">Assistente de Estudos</h3>
+              <button onclick="showHelpTooltip('Cole avisos de professores, informe tarefas que você já fez, cadastre datas de provas ou peça para recalcular seu dia diante de imprevistos.')" class="w-5 h-5 rounded-full bg-gdark-pill text-xs text-gdark-muted font-bold">?</button>
+            </div>
+            <button onclick="clearStudyChat()" class="text-xs font-semibold text-gdark-muted hover:text-rose-400">
+              Limpar chat
+            </button>
+          </div>
+
+          <div id="studyChatMessages" class="flex-1 overflow-y-auto py-3 space-y-3 text-sm pr-1"></div>
+
+          <div class="pt-2 border-t border-gdark-border flex gap-2">
+            <input type="text" id="studyChatInput" onkeydown="if(event.key==='Enter') sendStudyAssistantMessage()" placeholder="Cole avisos, fale o que já fez ou mude prazos..." class="flex-1 bg-gdark-bg border border-gdark-border rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500" />
+            <button onclick="sendStudyAssistantMessage()" id="btnStudyChatSend" class="px-4 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shrink-0">
+              Enviar
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SUB-ABA 3B: SEMANA -->
+      <div id="studySub-weekly" class="hidden space-y-4">
+        <div class="bg-gdark-surface border border-gdark-border rounded-3xl p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <h2 class="text-base lg:text-lg font-bold text-white">Prioridades da Semana</h2>
+              <span id="weekendStatusPill" class="text-xs font-bold px-2.5 py-0.5 rounded-full"></span>
+              <button onclick="showHelpTooltip('Ordenado pelas 4 regras do seu Notion: 1º Prioridade -> 2º Validade -> 3º Status -> 4º Importância.')" class="w-5 h-5 rounded-full bg-gdark-pill text-xs text-gdark-muted font-bold">?</button>
+            </div>
+
+            <div class="relative">
+              <button onclick="toggleWeeklyMenu()" class="w-9 h-9 rounded-xl bg-gdark-pill border border-gdark-border flex items-center justify-center text-base text-white hover:bg-neutral-700">
+                ☰
+              </button>
+              <div id="weeklyConfigDropdown" class="hidden absolute right-0 mt-2 w-60 bg-gdark-card border border-gdark-border rounded-2xl shadow-2xl p-2 z-30 space-y-1 text-xs">
+                <button onclick="openTaskModal(''); toggleWeeklyMenu();" class="w-full text-left px-3 py-2 rounded-xl hover:bg-gdark-pill text-white font-bold">
+                  ➕ Adicionar Tarefa / Lista
+                </button>
+                <button onclick="openTaskModal('prova'); toggleWeeklyMenu();" class="w-full text-left px-3 py-2 rounded-xl hover:bg-gdark-pill text-rose-300 font-bold">
+                  📅 Cadastrar Data de Prova / Trabalho
+                </button>
+                <button onclick="toggleShowCompletedWeekly(); toggleWeeklyMenu();" class="w-full text-left px-3 py-2 rounded-xl hover:bg-gdark-pill text-gdark-muted font-semibold">
+                  👁️ Mostrar/Ocultar Concluídas
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div id="weeklyTasksList" class="grid grid-cols-1 lg:grid-cols-2 gap-3"></div>
+        </div>
+      </div>
+
+      <!-- SUB-ABA 3C: AS 8 MATÉRIAS (GRADE 4x2 NO NOTEBOOK + LINK DIRETO PRO NOTEBOOKLM) -->
+      <div id="studySub-subjects" class="hidden space-y-4">
+        <div id="subjectsGridContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5"></div>
+
+        <div id="subjectSingleView" class="hidden space-y-4">
+          <button onclick="closeSubjectSingleView()" class="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-400">
+            <span>&larr;</span> <span>Voltar para as 8 matérias</span>
+          </button>
+          <div id="subjectSingleHeader" class="bg-gdark-surface border border-gdark-border rounded-3xl p-5"></div>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="bg-gdark-surface border border-gdark-border rounded-3xl p-4 space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-base font-bold text-white">Tarefas & Provas da Matéria</h3>
+                <button id="btnAddTaskForSubject" class="px-3 py-1.5 rounded-xl bg-indigo-600 text-white font-bold text-xs">+ Adicionar</button>
+              </div>
+              <div id="subjectSingleTasks" class="space-y-2"></div>
+            </div>
+            <div class="bg-gdark-surface border border-gdark-border rounded-3xl p-4 space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-base font-bold text-white">Aulas & Tópicos (Caderno)</h3>
+                <button onclick="promptNewClassNote()" class="px-3 py-1.5 rounded-xl bg-gdark-pill text-white font-semibold text-xs">+ Aula</button>
+              </div>
+              <div id="subjectSingleNotes" class="space-y-2"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
   </div>
 
-  <!-- =========================================================================== -->
-  <!-- VISÃO 1: PÁGINA PRINCIPAL (ESTILO GOOGLE DISCOVER + CHAT + CARROSSEL)       -->
-  <!-- =========================================================================== -->
-  <main id="view-discover" class="flex-1 max-w-xl w-full mx-auto px-4 pt-4 space-y-4">
-
-    <!-- BARRA SUPERIOR ESTILO GOOGLE (CHAT GERAL IA + ENGRENAGEM) -->
-    <div class="flex items-center gap-3">
-      <div onclick="toggleQuickTopChat()" class="flex-1 bg-gdark-pill border border-gdark-border rounded-full px-4 py-3 flex items-center justify-between cursor-pointer shadow-md hover:border-neutral-600 transition">
-        <div class="flex items-center gap-3">
-          <span class="text-lg font-extrabold bg-gradient-to-r from-blue-400 via-red-400 to-yellow-400 bg-clip-text text-transparent">G</span>
-          <span class="text-sm text-gdark-muted">Perguntar à IA ou ver avisos do dia...</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <span id="unreadNotifDot" class="w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse"></span>
-          <span class="text-base">💬</span>
-        </div>
-      </div>
-
-      <!-- BOTÃO DE ENGRENAGEM (CONFIGURAÇÕES GERAIS + SALVOS + NOTIFICAÇÕES) -->
-      <button onclick="openGlobalSettings('config')" class="w-12 h-12 rounded-full bg-gdark-pill border-2 border-blue-500/60 flex items-center justify-center text-lg shadow-md hover:bg-neutral-800 transition shrink-0" title="Configurações e Notícias Salvas">
-        ⚙️
-      </button>
-    </div>
-
-    <!-- GAVETA EXPANSÍVEL DO CHAT PRINCIPAL & CENTRAL DE AVISOS (NO TOPO) -->
-    <div id="quickTopChatDrawer" class="hidden bg-gdark-surface border border-gdark-border rounded-3xl p-4 space-y-3 shadow-2xl">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <span class="text-sm font-bold text-white">Assistente Geral & Avisos Ativos</span>
-          <button onclick="showHelpTooltip('Aqui você conversa sobre qualquer assunto, recebe lembretes de treino, água, refeições e estudos, e pode dispará-los para seu WhatsApp ou SMS.')" class="w-5 h-5 rounded-full bg-gdark-pill text-xs text-gdark-muted font-bold">?</button>
-        </div>
-        <div class="flex items-center gap-2">
-          <button onclick="openGlobalSettings('notifications')" class="text-xs text-blue-400 font-semibold">Editar Avisos</button>
-          <button onclick="toggleQuickTopChat()" class="text-gdark-muted text-lg leading-none">&times;</button>
-        </div>
-      </div>
-
-      <!-- MENSAGENS AUTOMÁTICAS DE ROTINA + CHAT -->
-      <div id="topChatHistory" class="max-h-60 overflow-y-auto space-y-2.5 text-sm pr-1"></div>
-
-      <!-- ENVIAR MENSAGEM RÁPIDA -->
-      <div class="flex gap-2 pt-1">
-        <input type="text" id="topChatInput" onkeydown="if(event.key==='Enter') sendTopChatMessage()" placeholder="Pergunte qualquer coisa à IA..." class="flex-1 bg-gdark-bg border border-gdark-border rounded-2xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500" />
-        <button onclick="sendTopChatMessage()" id="btnTopChatSend" class="px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm">Enviar</button>
-      </div>
-    </div>
-
-    <!-- CARROSSEL HORIZONTAL DE QUADROS RÁPIDOS (ESTILO WIDGETS DO GOOGLE) -->
-    <div class="flex gap-2.5 overflow-x-auto no-scrollbar py-1" id="googleQuickCardsRow"></div>
-
-    <!-- FILTRO DE CATEGORIAS LIMPO COM ÍCONES (LIVRO, ROBÔ, GLOBO) -->
-    <div class="flex items-center justify-between gap-2 pt-1">
-      <div class="flex gap-2 overflow-x-auto no-scrollbar">
-        <button onclick="setFeedCategory('all')" id="catBtn-all" class="px-3.5 py-2 rounded-full text-sm font-semibold bg-gdark-pill border border-blue-500/50 text-white shrink-0">
-          ✨ Todas
-        </button>
-        <button onclick="setFeedCategory('ufu')" id="catBtn-ufu" class="px-3.5 py-2 rounded-full text-sm font-medium bg-gdark-surface border border-gdark-border text-gdark-text shrink-0">
-          📖 UFU
-        </button>
-        <button onclick="setFeedCategory('tech')" id="catBtn-tech" class="px-3.5 py-2 rounded-full text-sm font-medium bg-gdark-surface border border-gdark-border text-gdark-text shrink-0">
-          🤖 Tecnologia
-        </button>
-        <button onclick="setFeedCategory('politics')" id="catBtn-politics" class="px-3.5 py-2 rounded-full text-sm font-medium bg-gdark-surface border border-gdark-border text-gdark-text shrink-0">
-          🌐 Política
-        </button>
-      </div>
-      <button onclick="refreshLiveDiscoverFeed()" id="btnRefreshDiscover" class="p-2 rounded-full bg-gdark-surface border border-gdark-border text-sm shrink-0" title="Atualizar Feed">
-        🔄
-      </button>
-    </div>
-
-    <!-- LISTA DE CARDS DE NOTÍCIAS IDÊNTICA AO GOOGLE DISCOVER (COM IMAGEM GRANDE, ❤️ E COMPARTILHAR) -->
-    <div id="discoverFeedList" class="space-y-5 pt-1"></div>
-
-  </main>
-
-  <!-- =========================================================================== -->
-  <!-- VISÃO 2: PÁGINA "ROTINA" (4 QUADROS NO TOPO + AGENDA & JANELAS EDITÁVEIS)   -->
-  <!-- =========================================================================== -->
-  <main id="view-routine" class="hidden flex-1 max-w-xl w-full mx-auto px-4 pt-4 space-y-5">
-
-    <div class="flex items-center justify-between">
-      <button onclick="navigateMainView('discover')" class="inline-flex items-center gap-1.5 text-sm font-semibold text-gdark-muted hover:text-white">
-        <span>&larr;</span> <span>Início</span>
-      </button>
-      <div class="flex items-center gap-2">
-        <span class="text-base font-bold text-white">Central de Rotina</span>
-        <button onclick="showHelpTooltip('Toque em qualquer um dos 4 pilares acima para abrir o módulo correspondente, ou clique na engrenagem abaixo para editar seus horários de aula e janelas livres do semestre.')" class="w-5 h-5 rounded-full bg-gdark-pill text-xs text-gdark-muted font-bold">?</button>
-      </div>
-    </div>
-
-    <!-- OS 4 QUADROS PRINCIPAIS NO TOPO (ESTUDOS, TREINO, DIETA, FINANÇAS) -->
-    <div class="grid grid-cols-2 gap-3">
-      <button onclick="navigateMainView('studies')" class="bg-gdark-surface border border-gdark-border hover:border-indigo-500/60 rounded-3xl p-4 text-left transition flex flex-col justify-between h-28 shadow-md">
-        <div class="flex items-center justify-between">
-          <span class="text-2xl">📚</span>
-          <span id="routineCardPendingBadge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300"></span>
-        </div>
-        <div>
-          <div class="text-base font-bold text-white">Estudos</div>
-          <div class="text-xs text-gdark-muted">Missão & 8 Matérias</div>
-        </div>
-      </button>
-
-      <a href="index.html" class="bg-gdark-surface border border-gdark-border hover:border-emerald-500/60 rounded-3xl p-4 text-left transition flex flex-col justify-between h-28 shadow-md">
-        <div class="flex items-center justify-between">
-          <span class="text-2xl">🏋️‍♂️</span>
-          <span class="text-xs font-semibold text-gdark-muted">06:30</span>
-        </div>
-        <div>
-          <div class="text-base font-bold text-white">Treino</div>
-          <div class="text-xs text-gdark-muted">Planilha & Cargas</div>
-        </div>
-      </a>
-
-      <a href="dieta.html" class="bg-gdark-surface border border-gdark-border hover:border-amber-500/60 rounded-3xl p-4 text-left transition flex flex-col justify-between h-28 shadow-md">
-        <div class="flex items-center justify-between">
-          <span class="text-2xl">🥗</span>
-          <span class="text-xs font-semibold text-gdark-muted">140g Prot • 3L</span>
-        </div>
-        <div>
-          <div class="text-base font-bold text-white">Dieta</div>
-          <div class="text-xs text-gdark-muted">Refeições & Água</div>
-        </div>
-      </a>
-
-      <a href="financas.html" class="bg-gdark-surface border border-gdark-border hover:border-sky-500/60 rounded-3xl p-4 text-left transition flex flex-col justify-between h-28 shadow-md">
-        <div class="flex items-center justify-between">
-          <span class="text-2xl">💰</span>
-          <span class="text-xs font-semibold text-gdark-muted">3 Bolsos</span>
-        </div>
-        <div>
-          <div class="text-base font-bold text-white">Finanças</div>
-          <div class="text-xs text-gdark-muted">Pix, Contas & Economia</div>
-        </div>
-      </a>
-    </div>
-
-    <!-- SUA AGENDA E JANELAS LIVRES DE HOJE (COM ENGRENAGEM DE EDIÇÃO COMPLETA) -->
-    <div class="bg-gdark-surface border border-gdark-border rounded-3xl p-4 space-y-4 shadow-md">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <h2 class="text-base font-bold text-white">Sua Agenda e Janelas Livres</h2>
-          <button onclick="showHelpTooltip('Mostra a linha do tempo completa do seu dia (treino, aulas da UFU, refeições no RU e janelas livres). Toque na engrenagem ao lado para mudar qualquer aula ou horário de janela livre.')" class="w-5 h-5 rounded-full bg-gdark-pill text-xs text-gdark-muted font-bold">?</button>
-        </div>
-        <div class="flex items-center gap-2">
-          <select id="routineDaySelector" onchange="renderRoutineSchedule()" class="bg-gdark-pill border border-gdark-border rounded-xl px-2.5 py-1.5 text-xs font-bold text-white"></select>
-          <button onclick="openScheduleEditorModal()" class="w-9 h-9 rounded-full bg-gdark-pill border border-gdark-border flex items-center justify-center text-sm hover:bg-neutral-700" title="Editar Aulas e Janelas Livres">
-            ⚙️
-          </button>
-        </div>
-      </div>
-
-      <!-- JANELAS LIVRES EM DESTAQUE -->
-      <div class="space-y-2">
-        <div class="text-xs font-bold uppercase tracking-wider text-emerald-400">⏳ Janelas Livres de Estudo</div>
-        <div id="routineFreeWindowsBox" class="space-y-2"></div>
-      </div>
-
-      <!-- GRADE DO DIA ESTILO APP DA UFU (AULAS + ROTINA FIXA) -->
-      <div class="space-y-2 pt-1">
-        <div class="text-xs font-bold uppercase tracking-wider text-blue-400">🎓 Grade de Aulas & Rotina do Dia</div>
-        <div id="routineClassesTimeline" class="space-y-2"></div>
-      </div>
-    </div>
-
-  </main>
-
-  <!-- =========================================================================== -->
-  <!-- VISÃO 3: PÁGINA "ESTUDOS" (FOCO, SEMANA E AS 8 MATÉRIAS)                    -->
-  <!-- =========================================================================== -->
-  <main id="view-studies" class="hidden flex-1 max-w-xl w-full mx-auto px-4 pt-4 space-y-5">
-
-    <!-- TOPO DE NAVEGAÇÃO INTERNA DE ESTUDOS -->
-    <div class="flex items-center justify-between">
-      <button onclick="navigateMainView('routine')" class="inline-flex items-center gap-1.5 text-sm font-semibold text-gdark-muted hover:text-white">
-        <span>&larr;</span> <span>Rotina</span>
-      </button>
-      <div class="flex bg-gdark-surface border border-gdark-border rounded-2xl p-1 gap-1">
-        <button onclick="switchStudyTab('focus')" id="studyTabBtn-focus" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white">🎯 Foco & IA</button>
-        <button onclick="switchStudyTab('weekly')" id="studyTabBtn-weekly" class="px-3 py-1.5 rounded-xl text-xs font-bold text-gdark-muted">📋 Semana</button>
-        <button onclick="switchStudyTab('subjects')" id="studyTabBtn-subjects" class="px-3 py-1.5 rounded-xl text-xs font-bold text-gdark-muted">📚 Matérias (8)</button>
-      </div>
-    </div>
-
-    <!-- SUB-ABA 3A: MODO DE EXECUÇÃO ÚNICA (MAIS LARGO, COM ☰ E ?) + ASSISTENTE DE ESTUDOS UNIFICADO -->
-    <div id="studySub-focus" class="space-y-5">
-
-      <!-- QUADRO LARGO: MODO DE EXECUÇÃO ÚNICA -->
-      <div class="bg-gdark-surface border border-indigo-500/40 rounded-3xl p-5 space-y-4 shadow-lg w-full">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <span id="studyModeBadgeTitle" class="text-xs font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300">
-              🎯 Modo de Execução Única
-            </span>
-            <button onclick="showHelpTooltip('Foque em apenas 1 atividade por vez. O sistema escolhe a tarefa mais urgente da fila (Prioridade -> Prazo -> Status -> Importância). Quando terminar, marque como concluída para liberar a próxima.')" class="w-5 h-5 rounded-full bg-gdark-pill text-xs text-gdark-muted font-bold">?</button>
-          </div>
-
-          <!-- MENU DE TRÊS PAUZINHOS (☰) PARA ESCOLHER O MODO DE ESTUDO / RECUPERAÇÃO FDS -->
-          <div class="relative">
-            <button onclick="toggleStudyModeMenu()" class="w-9 h-9 rounded-xl bg-gdark-pill border border-gdark-border flex items-center justify-center text-base text-white hover:bg-neutral-700" title="Selecionar Modo de Estudos">
-              ☰
-            </button>
-            <div id="studyModeDropdown" class="hidden absolute right-0 mt-2 w-60 bg-gdark-card border border-gdark-border rounded-2xl shadow-2xl p-2 z-30 space-y-1 text-xs">
-              <div class="px-2.5 py-1 text-[10px] font-bold uppercase text-gdark-muted">Modo de Execução</div>
-              <button onclick="setStudyExecutionMode('single')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-gdark-pill text-white font-semibold flex items-center justify-between">
-                <span>🎯 1 Tarefa por Vez (Padrão)</span>
-              </button>
-              <button onclick="setStudyExecutionMode('exam')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-gdark-pill text-white font-semibold flex items-center justify-between">
-                <span>🔥 Modo Véspera de Prova</span>
-              </button>
-              <button onclick="setStudyExecutionMode('recovery')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-gdark-pill text-amber-300 font-semibold flex items-center justify-between">
-                <span>⚠️ Modo Recuperação (Fim de Semana)</span>
-              </button>
-              <hr class="border-gdark-border my-1" />
-              <button onclick="openTaskModal('')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-gdark-pill text-indigo-300 font-bold">
-                + Criar Tarefa Manualmente
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- CARTÃO DA TAREFA ATUAL (FONTE MAIOR E LIMPA) -->
-        <div id="spotlightTaskContainer"></div>
-
-        <!-- CRONÔMETRO DE FOCO EMBUTIDO -->
-        <div class="bg-gdark-bg border border-gdark-border rounded-2xl p-3.5 flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <span class="text-xl">⏱️</span>
-            <div id="focusTimerDisplay" class="text-2xl font-mono font-extrabold text-white">50:00</div>
-          </div>
-          <div class="flex gap-2">
-            <button onclick="toggleStudyTimer()" id="btnStudyTimer" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm">
-              ▶ Iniciar
-            </button>
-            <button onclick="resetStudyTimer()" class="px-3 py-2 rounded-xl bg-gdark-pill text-gdark-muted hover:text-white text-sm">
-              ↺
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ASSISTENTE DE ESTUDOS (CHAT E COLAGEM DE AVISOS INTEGRADOS E MINIMALISTA) -->
-      <div class="bg-gdark-surface border border-gdark-border rounded-3xl p-4 flex flex-col h-[430px] shadow-md">
-        <div class="flex items-center justify-between pb-3 border-b border-gdark-border">
-          <div class="flex items-center gap-2">
-            <span class="text-base">🤖</span>
-            <h3 class="text-base font-bold text-white">Assistente de Estudos</h3>
-            <button onclick="showHelpTooltip('Cole aqui avisos de professores (Teams/Moodle), fale quais tarefas você já concluiu, informe datas de provas ou avise sobre imprevistos no seu dia. A IA atualiza suas matérias e recalcula sua tarefa atual sozinha!')" class="w-5 h-5 rounded-full bg-gdark-pill text-xs text-gdark-muted font-bold">?</button>
-          </div>
-          <button onclick="clearStudyChat()" class="text-xs font-semibold text-gdark-muted hover:text-rose-400">
-            Limpar chat
-          </button>
-        </div>
-
-        <!-- MENSAGENS DO ASSISTENTE DE ESTUDOS -->
-        <div id="studyChatMessages" class="flex-1 overflow-y-auto py-3 space-y-3 text-sm pr-1"></div>
-
-        <!-- CAMPO DE ENTRADA UNIFICADO -->
-        <div class="pt-2 border-t border-gdark-border flex gap-2">
-          <input type="text" id="studyChatInput" onkeydown="if(event.key==='Enter') sendStudyAssistantMessage()" placeholder="Cole avisos do Teams, diga o que já fez ou ajuste prazos..." class="flex-1 bg-gdark-bg border border-gdark-border rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500" />
-          <button onclick="sendStudyAssistantMessage()" id="btnStudyChatSend" class="px-4 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shrink-0">
-            Enviar
-          </button>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- SUB-ABA 3B: SEMANA (COM BOTÃO CONCLUÍDO, FONTES COLORIDAS E MENU ☰) -->
-    <div id="studySub-weekly" class="hidden space-y-4">
-
-      <div class="bg-gdark-surface border border-gdark-border rounded-3xl p-4 space-y-4">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <h2 class="text-base font-bold text-white">Prioridades da Semana</h2>
-            <span id="weekendStatusPill" class="text-xs font-bold px-2.5 py-0.5 rounded-full"></span>
-            <button onclick="showHelpTooltip('Ordenado pelas 4 regras do seu Notion: 1º Prioridade -> 2º Validade -> 3º Status -> 4º Importância da Matéria. Se restar prioridade Alta na sexta à noite, o Sábado entra em Modo Recuperação.')" class="w-5 h-5 rounded-full bg-gdark-pill text-xs text-gdark-muted font-bold">?</button>
-          </div>
-
-          <!-- MENU DE 3 PAUZINHOS (☰) DA PÁGINA SEMANA -->
-          <div class="relative">
-            <button onclick="toggleWeeklyMenu()" class="w-9 h-9 rounded-xl bg-gdark-pill border border-gdark-border flex items-center justify-center text-base text-white hover:bg-neutral-700">
-              ☰
-            </button>
-            <div id="weeklyConfigDropdown" class="hidden absolute right-0 mt-2 w-60 bg-gdark-card border border-gdark-border rounded-2xl shadow-2xl p-2 z-30 space-y-1 text-xs">
-              <button onclick="openTaskModal(''); toggleWeeklyMenu();" class="w-full text-left px-3 py-2 rounded-xl hover:bg-gdark-pill text-white font-bold">
-                ➕ Adicionar Tarefa / Lista
-              </button>
-              <button onclick="openTaskModal('prova'); toggleWeeklyMenu();" class="w-full text-left px-3 py-2 rounded-xl hover:bg-gdark-pill text-rose-300 font-bold">
-                📅 Cadastrar Data de Prova / Trabalho
-              </button>
-              <button onclick="toggleShowCompletedWeekly(); toggleWeeklyMenu();" class="w-full text-left px-3 py-2 rounded-xl hover:bg-gdark-pill text-gdark-muted font-semibold">
-                👁️ Mostrar/Ocultar Concluídas
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div id="weeklyTasksList" class="space-y-2.5"></div>
-      </div>
-
-    </div>
-
-    <!-- SUB-ABA 3C: AS 8 MATÉRIAS (MANTIDA COM FONTES COLORIDAS E SUBPÁGINAS) -->
-    <div id="studySub-subjects" class="hidden space-y-4">
-      <div id="subjectsGridContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
-
-      <div id="subjectSingleView" class="hidden space-y-4">
-        <button onclick="closeSubjectSingleView()" class="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-400">
-          <span>&larr;</span> <span>Voltar para as 8 matérias</span>
-        </button>
-        <div id="subjectSingleHeader" class="bg-gdark-surface border border-gdark-border rounded-3xl p-4"></div>
-        <div class="bg-gdark-surface border border-gdark-border rounded-3xl p-4 space-y-3">
-          <div class="flex items-center justify-between">
-            <h3 class="text-base font-bold text-white">Tarefas & Provas da Matéria</h3>
-            <button id="btnAddTaskForSubject" class="px-3 py-1.5 rounded-xl bg-indigo-600 text-white font-bold text-xs">+ Adicionar</button>
-          </div>
-          <div id="subjectSingleTasks" class="space-y-2"></div>
-        </div>
-        <div class="bg-gdark-surface border border-gdark-border rounded-3xl p-4 space-y-3">
-          <div class="flex items-center justify-between">
-            <h3 class="text-base font-bold text-white">Aulas & Tópicos (Caderno)</h3>
-            <button onclick="promptNewClassNote()" class="px-3 py-1.5 rounded-xl bg-gdark-pill text-white font-semibold text-xs">+ Aula</button>
-          </div>
-          <div id="subjectSingleNotes" class="space-y-2"></div>
-        </div>
-      </div>
-    </div>
-
-  </main>
-
-  <!-- =========================================================================== -->
-  <!-- BARRA DE NAVEGAÇÃO INFERIOR LIMPA                                           -->
-  <!-- =========================================================================== -->
-  <nav class="fixed bottom-0 inset-x-0 z-40 bg-[#121212]/95 backdrop-blur border-t border-gdark-border">
+  <!-- BARRA INFERIOR APENAS NO CELULAR (OCULTA NO NOTEBOOK COM lg:hidden) -->
+  <nav class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-[#121212]/95 backdrop-blur border-t border-gdark-border">
     <div class="max-w-xl mx-auto grid grid-cols-3 py-2.5">
       <button onclick="navigateMainView('discover')" id="bottomNav-discover" class="flex flex-col items-center gap-1 text-blue-400">
         <span class="text-lg">🏠</span>
@@ -402,48 +471,38 @@
     </div>
   </nav>
 
-  <!-- =========================================================================== -->
-  <!-- MODAL GLOBAL DE CONFIGURAÇÕES (ENGRENAGEM DA 1ª PÁGINA)                     -->
-  <!-- =========================================================================== -->
+  <!-- MODAIS DE CONFIGURAÇÕES, AGENDA, TAREFA E AJuda (?) -->
   <div id="globalSettingsModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-gdark-surface border border-gdark-border w-full max-w-lg rounded-3xl p-5 space-y-4 max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between">
         <h3 class="text-base font-bold text-white">⚙️ Configurações, Salvos & Notificações</h3>
         <button onclick="closeGlobalSettings()" class="text-gdark-muted hover:text-white text-2xl leading-none">&times;</button>
       </div>
-
-      <!-- ABAS DA ENGRENAGEM -->
       <div class="flex gap-1.5 bg-gdark-bg p-1 rounded-2xl text-xs font-bold">
-        <button onclick="switchSettingsTab('config')" id="setTab-config" class="flex-1 py-2 rounded-xl bg-gdark-pill text-white">🔑 IA & Memória</button>
+        <button onclick="switchSettingsTab('config')" id="setTab-config" class="flex-1 py-2 rounded-xl bg-gdark-pill text-white">🔑 IA & NotebookLM</button>
         <button onclick="switchSettingsTab('saved')" id="setTab-saved" class="flex-1 py-2 rounded-xl text-gdark-muted">❤️ Notícias Salvas</button>
         <button onclick="switchSettingsTab('notifications')" id="setTab-notifications" class="flex-1 py-2 rounded-xl text-gdark-muted">📲 Avisos & WhatsApp</button>
       </div>
 
-      <!-- ABA 1: IA, NOTEBOOKLM CONTEXTO & BACKUP -->
       <div id="settingsPane-config" class="space-y-3 text-sm">
         <div>
           <label class="text-xs font-bold text-gdark-muted block mb-1">Chave API Gemini (gemini-3.8-flash)</label>
           <input type="password" id="cfgApiKey" placeholder="Cole sua chave AIza..." class="w-full bg-gdark-bg border border-gdark-border rounded-2xl px-3.5 py-2.5 text-white text-sm" />
         </div>
         <div>
-          <div class="flex items-center justify-between mb-1">
-            <label class="text-xs font-bold text-gdark-muted">🧠 Memória Sincronizada (Contexto Gemini / NotebookLM)</label>
-            <button onclick="showHelpTooltip('Tudo o que estiver escrito aqui é lido automaticamente por todos os chats do seu aplicativo (Estudos, Treino, Dieta e Geral) para que a IA saiba exatamente onde você está em cada matéria e sua rotina.')" class="w-4 h-4 rounded-full bg-gdark-pill text-[10px] text-gdark-muted">?</button>
-          </div>
+          <label class="text-xs font-bold text-gdark-muted block mb-1">🧠 Memória Sincronizada (Seus 9 Cadernos do NotebookLM & Rotina)</label>
           <textarea id="cfgNotebookContext" rows="4" class="w-full bg-gdark-bg border border-gdark-border rounded-2xl p-3 text-xs text-white"></textarea>
         </div>
         <div class="flex gap-2 pt-1">
           <button onclick="saveGlobalConfig()" class="flex-1 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm">Salvar Tudo</button>
-          <button onclick="exportAllAppData()" class="px-4 py-2.5 rounded-2xl bg-gdark-pill text-xs font-bold text-white">Exportar Backup</button>
+          <button onclick="exportAllAppData()" class="px-4 py-2.5 rounded-2xl bg-gdark-pill text-xs font-bold text-white">Backup JSON</button>
         </div>
       </div>
 
-      <!-- ABA 2: NOTÍCIAS CURTIDAS / SALVAS (❤️) -->
       <div id="settingsPane-saved" class="hidden space-y-3">
         <div id="savedNewsContainer" class="space-y-2.5 max-h-80 overflow-y-auto"></div>
       </div>
 
-      <!-- ABA 3: EDITOR DE MENSAGENS, WHATSAPP, SMS E NOTIFICAÇÕES -->
       <div id="settingsPane-notifications" class="hidden space-y-3 text-xs">
         <div class="grid grid-cols-2 gap-2">
           <div>
@@ -451,33 +510,21 @@
             <input type="text" id="cfgPhone" placeholder="Ex: 5534999999999" class="w-full bg-gdark-bg border border-gdark-border rounded-xl px-3 py-2 text-white" />
           </div>
           <div>
-            <label class="text-gdark-muted block mb-1">Tópico ntfy.sh (Push em 2º plano)</label>
+            <label class="text-gdark-muted block mb-1">Tópico ntfy.sh (Push)</label>
             <input type="text" id="cfgNtfyTopic" placeholder="Ex: ithan_ufu_rotina" class="w-full bg-gdark-bg border border-gdark-border rounded-xl px-3 py-2 text-white" />
           </div>
         </div>
-
         <div class="flex gap-2">
-          <button onclick="requestBrowserNotificationPerm()" class="flex-1 py-2 rounded-xl bg-indigo-600/30 border border-indigo-500/40 text-indigo-200 font-bold">
-            🔔 Ativar Permissão de Notificação
-          </button>
-          <button onclick="sendTestNotificationNow()" class="px-3 py-2 rounded-xl bg-emerald-600 text-white font-bold">
-            Testar Agora
-          </button>
+          <button onclick="requestBrowserNotificationPerm()" class="flex-1 py-2 rounded-xl bg-indigo-600/30 border border-indigo-500/40 text-indigo-200 font-bold">🔔 Ativar Permissão</button>
+          <button onclick="sendTestNotificationNow()" class="px-3 py-2 rounded-xl bg-emerald-600 text-white font-bold">Testar Agora</button>
         </div>
-
-        <div class="font-bold text-white pt-1">Personalizar Horários e Textos dos Avisos:</div>
+        <div class="font-bold text-white pt-1">Editar Mensagens e Horários dos Avisos:</div>
         <div id="customRemindersEditorList" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
-
-        <button onclick="saveNotificationsConfig()" class="w-full py-2.5 rounded-2xl bg-blue-600 text-white font-bold text-sm">
-          Salvar Avisos Personalizados
-        </button>
+        <button onclick="saveNotificationsConfig()" class="w-full py-2.5 rounded-2xl bg-blue-600 text-white font-bold text-sm">Salvar Avisos</button>
       </div>
     </div>
   </div>
 
-  <!-- =========================================================================== -->
-  <!-- MODAL DE EDIÇÃO DA AGENDA & JANELAS LIVRES (ENGRENAGEM DA PÁGINA ROTINA)    -->
-  <!-- =========================================================================== -->
   <div id="scheduleEditorModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-gdark-surface border border-gdark-border w-full max-w-lg rounded-3xl p-5 space-y-4 max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between">
@@ -485,26 +532,20 @@
         <button onclick="closeScheduleEditorModal()" class="text-gdark-muted hover:text-white text-2xl leading-none">&times;</button>
       </div>
       <div class="space-y-3 text-xs">
+        <select id="editSchedDaySelect" onchange="loadDayIntoScheduleEditor()" class="w-full bg-gdark-bg border border-gdark-border rounded-xl px-3 py-2.5 text-white font-bold text-sm"></select>
         <div>
-          <label class="text-gdark-muted font-bold block mb-1">Selecione o Dia da Semana para Editar</label>
-          <select id="editSchedDaySelect" onchange="loadDayIntoScheduleEditor()" class="w-full bg-gdark-bg border border-gdark-border rounded-xl px-3 py-2.5 text-white font-bold text-sm"></select>
-        </div>
-        <div>
-          <label class="text-emerald-400 font-bold block mb-1">Janelas Livres de Estudo (1 por linha • Início e Fim)</label>
-          <textarea id="editSchedFreeWindows" rows="3" placeholder="Ex: 09:40 - 12:40 • Janela Manhã (3h)" class="w-full bg-gdark-bg border border-gdark-border rounded-xl p-3 text-white"></textarea>
+          <label class="text-emerald-400 font-bold block mb-1">Janelas Livres de Estudo (1 por linha)</label>
+          <textarea id="editSchedFreeWindows" rows="3" class="w-full bg-gdark-bg border border-gdark-border rounded-xl p-3 text-white"></textarea>
         </div>
         <div>
           <label class="text-blue-400 font-bold block mb-1">Aulas, Treino e Refeições do Dia (1 por linha)</label>
-          <textarea id="editSchedClasses" rows="6" placeholder="Ex: 10:40 - 12:20 • Algoritmos (Bloco 1B)" class="w-full bg-gdark-bg border border-gdark-border rounded-xl p-3 text-white"></textarea>
+          <textarea id="editSchedClasses" rows="6" class="w-full bg-gdark-bg border border-gdark-border rounded-xl p-3 text-white"></textarea>
         </div>
-        <button onclick="saveScheduleEditorChanges()" class="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm">
-          Salvar Horários do Dia
-        </button>
+        <button onclick="saveScheduleEditorChanges()" class="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm">Salvar Horários</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL ADICIONAR TAREFA / PROVA -->
   <div id="taskModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-gdark-surface border border-gdark-border w-full max-w-md rounded-3xl p-5 space-y-3.5">
       <div class="flex justify-between items-center">
@@ -513,7 +554,7 @@
       </div>
       <div class="space-y-3 text-sm">
         <select id="newTaskSubject" class="w-full bg-gdark-bg border border-gdark-border rounded-2xl px-3.5 py-2.5 text-white"></select>
-        <input type="text" id="newTaskTitle" placeholder="Ex: Prova 1 de Cálculo 2 / Lista de Exercícios" class="w-full bg-gdark-bg border border-gdark-border rounded-2xl px-3.5 py-2.5 text-white" />
+        <input type="text" id="newTaskTitle" placeholder="Descrição da Tarefa ou Prova" class="w-full bg-gdark-bg border border-gdark-border rounded-2xl px-3.5 py-2.5 text-white" />
         <div class="grid grid-cols-3 gap-2 text-xs">
           <select id="newTaskPriority" class="bg-gdark-bg border border-gdark-border rounded-xl px-2.5 py-2.5 text-white">
             <option value="alta">Alta</option>
@@ -521,14 +562,13 @@
             <option value="baixa">Baixa</option>
           </select>
           <input type="date" id="newTaskDue" class="bg-gdark-bg border border-gdark-border rounded-xl px-2.5 py-2.5 text-white" />
-          <input type="number" id="newTaskMins" value="50" placeholder="Min" class="bg-gdark-bg border border-gdark-border rounded-xl px-2.5 py-2.5 text-white" />
+          <input type="number" id="newTaskMins" value="50" class="bg-gdark-bg border border-gdark-border rounded-xl px-2.5 py-2.5 text-white" />
         </div>
         <button onclick="saveNewTaskFromModal()" class="w-full py-3 rounded-2xl bg-indigo-600 text-white font-bold text-sm">Salvar na Fila</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL DE DICA RÁPIDA (?) -->
   <div id="helpTooltipModal" class="fixed inset-0 z-50 hidden bg-black/70 flex items-center justify-center p-6" onclick="this.classList.add('hidden')">
     <div class="bg-gdark-surface border border-gdark-border max-w-sm w-full rounded-3xl p-5 space-y-3 text-center shadow-2xl" onclick="event.stopPropagation()">
       <div class="w-10 h-10 rounded-full bg-indigo-500/20 text-indigo-300 font-bold flex items-center justify-center mx-auto text-lg">?</div>
@@ -538,9 +578,6 @@
   </div>
 
   <script>
-    // ===========================================================================
-    // REGISTRO DO SERVICE WORKER E CAPTURA DO EVENTO DE INSTALAÇÃO (PWA)
-    // ===========================================================================
     let deferredInstallPrompt = null;
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -560,100 +597,62 @@
       document.getElementById('installAppBanner').classList.add('hidden');
     }
 
-    // ===========================================================================
-    // BANCO DE DADOS UNIFICADO (COM CONTEXTO COMPLETO DO SEMESTRE)
-    // ===========================================================================
     const API_KEY_STORAGE = 'nutri_ufu_gemini_key';
     const HUB_STORAGE_KEY = 'ufu_super_hub_v2';
     const GEMINI_MODEL = 'gemini-3.8-flash';
 
+    // SEUS 9 CADERNOS DO NOTEBOOKLM MAPEADOS DIRETAMENTE NAS MATÉRIAS
+    const NOTEBOOKLM_LINKS = {
+      algoritmos: 'https://gemini.google.com/notebook/38948cf6-3148-43cd-aa5d-009d0fe60707',
+      calculo2: 'https://gemini.google.com/notebook/8d7673c0-ec6c-48b4-a5ee-07087456546a',
+      fisica1: 'https://gemini.google.com/notebook/f451a3f3-ef65-4e3b-8b26-9dcfbd24dc21',
+      algebralinear: 'https://gemini.google.com/notebook/0477ab75-8ae9-4e70-948c-d3095c58597a',
+      estatistica: 'https://gemini.google.com/notebook/dc3c13e4-440a-41ab-b577-5f6c7c55ed29',
+      geometria: 'https://gemini.google.com/notebook/0397642a-e56e-4649-8a86-bf933fee7117',
+      labfisica: 'https://gemini.google.com/notebook/5e031a1d-79c3-46c9-aae9-a55a83567272',
+      seguranca: 'https://gemini.google.com/notebook/9ba21446-cc3f-4d99-aca0-b2aaa997dd60'
+    };
+
     const DEFAULT_CONTEXT_MEMORY = `Estudante: Ithan, Engenharia Mecatrônica na UFU (Semestre 2026/2: 01/09/2026 a 19/12/2026).
-Matérias em curso (8):
-1. Algoritmos (Profª Rita, 50+50, Importância Alta, Dificuldade Alta) - Foco em listas de lógica, condicionais, laços e C/C++.
-2. Cálculo 2 (Profª Lúcia, 30+30+40+extras, Dificuldade Alta) - Foco em integrais definidas, volumes de sólidos e séries.
-3. Física 1 (Prof. Adamo, 40+40+20, Dificuldade Alta) - Cinemática, dinâmica e conservação.
-4. Álgebra Linear (Prof. Giovanny, 35+35+40+10) - Matrizes, determinantes e sistemas.
-5. Estatística (Prof. Giovanny, 35+35+35+12+10) - Dispersão e probabilidades.
-6. Geometria Analítica (Profª Marisa, 30+30+30+10) - Vetores, retas, planos, Cônicas e 8 Superfícies Quádricas.
-7. Lab Física (Prof. Acácio, 60 rel + 40 PF) - Paquímetro, micrômetro, MRU e lançamento oblíquo.
-8. Segurança do Trabalho (Prof. João Cícero) - ANPs entregues, NRs e robótica colaborativa.
-Rotina Física e Dieta: Treino às 06:30, Almoço RU 12:00, Janta 19:00, Meta 140g proteína e 3L de água.
-Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 150, 7,41% Reserva Intocável).`;
+Cadernos ativos no NotebookLM: Algoritmos (12 fontes), Cálculo 2 (11 fontes: integrais, volumes, séries), Física 1 (8 fontes), Geometria Analítica (8 fontes: vetores, cônicas e 8 superfícies quádricas), Lab.Física (4 fontes), Álgebra Linear (3 fontes: matrizes), Estatística (2 fontes), Segurança do Trabalho ST (Guia IA e ANPs 1 e 2), Robô Seguidor de Linha (5 fontes).
+Rotina: Treino às 06:30, Almoço RU 12:00, Janta 19:00, Meta 140g proteína e 3L água.
+Finanças: Regra Pix proporcional (81,48% Contas, 11,11% Lazer/Uber, 7,41% Reserva Intocável).`;
 
     const DEFAULT_SCHEDULE = {
       1: {
         name: 'Segunda-feira',
         freeWindows: ['09:40 - 12:40 • Janela Manhã (3h)', '19:30 - 23:30 • Janela Noite (4h)'],
-        classes: [
-          '06:30 - 07:40 • 🏋️‍♂️ Treino Matinal',
-          '10:40 - 12:20 • 🎓 Algoritmos (Profª Rita)',
-          '12:20 - 13:10 • 🍽️ Almoço RU UFU',
-          '13:10 - 14:50 • 🎓 Cálculo 2 (Profª Lúcia)',
-          '14:50 - 16:30 • 🎓 Física 1 (Prof. Adamo)',
-          '16:50 - 18:30 • 🎓 Segurança do Trabalho',
-          '18:45 - 19:30 • 🍽️ Jantar'
-        ]
+        classes: ['06:30 - 07:40 • 🏋️‍♂️ Treino Matinal', '10:40 - 12:20 • 🎓 Algoritmos', '12:20 - 13:10 • 🍽️ Almoço RU', '13:10 - 14:50 • 🎓 Cálculo 2', '14:50 - 16:30 • 🎓 Física 1', '16:50 - 18:30 • 🎓 Segurança do Trabalho']
       },
       2: {
         name: 'Terça-feira',
         freeWindows: ['09:40 - 12:40 • Janela Manhã (3h)', '19:00 - 23:30 • Janela Noite (4h30)'],
-        classes: [
-          '06:30 - 07:40 • 🏋️‍♂️ Treino Matinal',
-          '10:40 - 12:20 • 🎓 Segurança do Trabalho',
-          '12:20 - 13:10 • 🍽️ Almoço RU UFU',
-          '13:10 - 14:50 • 🎓 Cálculo 2 (Profª Lúcia)',
-          '14:50 - 16:30 • 🎓 Álgebra Linear (Prof. Giovanny)',
-          '18:15 - 19:00 • 🍽️ Jantar'
-        ]
+        classes: ['06:30 - 07:40 • 🏋️‍♂️ Treino Matinal', '10:40 - 12:20 • 🎓 Segurança do Trabalho', '12:20 - 13:10 • 🍽️ Almoço RU', '13:10 - 14:50 • 🎓 Cálculo 2', '14:50 - 16:30 • 🎓 Álgebra Linear']
       },
       3: {
         name: 'Quarta-feira',
         freeWindows: ['09:40 - 12:40 • Janela Manhã (3h)', '19:00 - 23:30 • Janela Noite (4h30)'],
-        classes: [
-          '06:30 - 07:40 • 🏋️‍♂️ Treino Matinal',
-          '10:40 - 12:20 • 🎓 Lab Física / Segurança',
-          '12:20 - 13:10 • 🍽️ Almoço RU UFU',
-          '13:10 - 14:50 • 🎓 Cálculo 2 (Profª Lúcia)',
-          '14:50 - 16:30 • 🎓 Algoritmos (Profª Rita)',
-          '18:15 - 19:00 • 🍽️ Jantar'
-        ]
+        classes: ['06:30 - 07:40 • 🏋️‍♂️ Treino Matinal', '10:40 - 12:20 • 🎓 Lab Física / Segurança', '12:20 - 13:10 • 🍽️ Almoço RU', '13:10 - 14:50 • 🎓 Cálculo 2', '14:50 - 16:30 • 🎓 Algoritmos']
       },
       4: {
         name: 'Quinta-feira',
         freeWindows: ['12:00 - 13:00 • Janela Almoço (1h)', '19:00 - 23:30 • Janela Noite (4h30)'],
-        classes: [
-          '06:30 - 07:40 • 🏋️‍♂️ Treino Matinal',
-          '11:30 - 12:50 • 🎓 Algoritmos (Profª Rita)',
-          '13:10 - 14:50 • 🎓 Física 1 (Prof. Adamo)',
-          '14:50 - 18:30 • 🎓 Estatística (Prof. Giovanny)',
-          '18:30 - 19:00 • 🍽️ Jantar'
-        ]
+        classes: ['06:30 - 07:40 • 🏋️‍♂️ Treino Matinal', '11:30 - 12:50 • 🎓 Algoritmos', '13:10 - 14:50 • 🎓 Física 1', '14:50 - 18:30 • 🎓 Estatística']
       },
       5: {
         name: 'Sexta-feira',
         freeWindows: ['12:00 - 13:00 • Intervalo (1h)', '15:00 - 23:30 • Tarde e Noite Livre (8h30)'],
-        classes: [
-          '06:30 - 07:40 • 🏋️‍♂️ Treino Matinal',
-          '11:30 - 12:50 • 🎓 Algoritmos (Profª Rita)',
-          '13:10 - 14:50 • 🎓 Estatística (Prof. Giovanny)',
-          '14:50 - 16:00 • 🎓 Geometria Analítica (Profª Marisa)'
-        ]
+        classes: ['06:30 - 07:40 • 🏋️‍♂️ Treino Matinal', '11:30 - 12:50 • 🎓 Algoritmos', '13:10 - 14:50 • 🎓 Estatística', '14:50 - 16:00 • 🎓 Geometria Analítica']
       },
       6: {
         name: 'Sábado',
         freeWindows: ['Manhã/Tarde Livre (ou Modo Recuperação se houver pendência Alta)'],
-        classes: [
-          '09:00 - 11:00 • 🧹 Arrumar o apartamento & Organização',
-          '12:00 - 13:00 • 🍽️ Almoço',
-          '16:00 - 17:15 • 🏋️‍♂️ Treino de Sábado'
-        ]
+        classes: ['09:00 - 11:00 • 🧹 Arrumar o apê & Organização', '16:00 - 17:15 • 🏋️‍♂️ Treino de Sábado']
       },
       0: {
         name: 'Domingo',
         freeWindows: ['Descanso & Revisão Leve da Semana'],
-        classes: [
-          '10:00 - 11:00 • 📋 Revisar planejamento da semana e metas'
-        ]
+        classes: ['10:00 - 11:00 • 📋 Alinhamento da Semana']
       }
     };
 
@@ -663,7 +662,7 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
       { id: 'fisica1', name: 'Física 1', prof: 'Adamo', workload: 4, exams: '40 + 40 + 20', importance: 'medio', difficulty: 'alta', notes: ['Cinemática e dinâmica'] },
       { id: 'algebralinear', name: 'Álgebra Linear', prof: 'Giovanny', workload: 3, exams: '35 + 35 + 40 + 10', importance: 'medio', difficulty: 'media', notes: ['Matrizes e sistemas lineares'] },
       { id: 'estatistica', name: 'Estatística', prof: 'Giovanny', workload: 4, exams: '35 + 35 + 35 + 12 + 10', importance: 'medio', difficulty: 'media', notes: ['Medidas de dispersão e probabilidade'] },
-      { id: 'geometria', name: 'Geometria Analítica', prof: 'Marisa', workload: 4, exams: '30 + 30 + 30 + 10', importance: 'medio', difficulty: 'media', notes: ['Vetores, Cônicas (Parábola, Elipse, Hipérbole) e 8 Superfícies Quádricas'] },
+      { id: 'geometria', name: 'Geometria Analítica', prof: 'Marisa', workload: 4, exams: '30 + 30 + 30 + 10', importance: 'medio', difficulty: 'media', notes: ['Vetores, Cônicas e 8 Superfícies Quádricas'] },
       { id: 'labfisica', name: 'Lab Física', prof: 'Acácio', workload: 2, exams: '60 relat. + 40 PF', importance: 'medio', difficulty: 'media', notes: ['Paquímetro, micrômetro, MRU e lançamento oblíquo'] },
       { id: 'seguranca', name: 'Segurança do Trabalho', prof: 'João Cícero', workload: 2, exams: '30 + 16 + 4 + 12 + 24 + 24', importance: 'baixo', difficulty: 'alta', notes: ['ANPs 1 e 2 concluídas • NRs e ISO 10218'] }
     ];
@@ -680,12 +679,10 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
       { id: 't9', subjectId: 'seguranca', title: 'Registrar fotos de locais com riscos + Atividade 1', priority: 'media', due: '2026-10-23', status: 'todo', estMins: 40 }
     ];
 
-    // NOTÍCIAS ESTILO GOOGLE DISCOVER COM IMAGENS DE CAPA
     const DEFAULT_DISCOVER_NEWS = [
       {
         id: 'n1',
         category: 'ufu',
-        icon: '📖',
         title: 'UFU amplia laboratórios de pesquisa em Engenharia, Automação e Sistemas Inteligentes no Campus Santa Mônica',
         source: 'Comunica UFU',
         time: '1 dia',
@@ -695,7 +692,6 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
       {
         id: 'n2',
         category: 'ufu',
-        icon: '📖',
         title: 'PROGRAD e Diretórios das Engenharias divulgam oportunidades de Iniciação Científica e Monitoria para 2026/2',
         source: 'Portal UFU',
         time: '2 dias',
@@ -705,7 +701,6 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
       {
         id: 'n3',
         category: 'tech',
-        icon: '🤖',
         title: 'Robótica Colaborativa e ESP32-C6: como a IA embarcada está transformando o controle industrial e a Mecatrônica',
         source: 'Engenharia & Tech',
         time: '5 h',
@@ -715,7 +710,6 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
       {
         id: 'n4',
         category: 'tech',
-        icon: '🤖',
         title: 'Avanço dos modelos multimodais e agentes de código acelera projetos de sistemas físicos e visão computacional',
         source: 'Mundo IA',
         time: '8 h',
@@ -725,7 +719,6 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
       {
         id: 'n5',
         category: 'politics',
-        icon: '🌐',
         title: 'Panorama Político e Econômico: debates sobre investimentos em tecnologia, indústria nacional e universidades',
         source: 'Brasil & Mundo',
         time: 'Hoje',
@@ -744,7 +737,7 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
 
     let db = loadHubDb();
     let currentFeedCategory = 'all';
-    let currentStudyMode = 'single'; // single | exam | recovery
+    let currentStudyMode = 'single';
     let showCompletedWeekly = true;
     let activeSubjectDetailId = null;
     let studyTimerInterval = null;
@@ -765,7 +758,7 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
           if (!parsed.contextMemory) parsed.contextMemory = DEFAULT_CONTEXT_MEMORY;
           if (!parsed.topChat) parsed.topChat = [];
           if (!parsed.studyChat) parsed.studyChat = [
-            { role: 'ai', text: 'Olá, Ithan! Estou conectado ao contexto das suas 8 matérias e da sua rotina. Cole avisos do Teams/Moodle, conte o que já concluiu ou informe datas de provas!' }
+            { role: 'ai', text: 'Olá, Ithan! Estou sincronizado com suas 8 matérias e seus cadernos do NotebookLM. Cole avisos do Teams/Moodle, diga o que já fez ou ajuste prazos!' }
           ];
           return parsed;
         }
@@ -782,7 +775,7 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
         contextMemory: DEFAULT_CONTEXT_MEMORY,
         topChat: [],
         studyChat: [
-          { role: 'ai', text: 'Olá, Ithan! Estou conectado ao contexto das suas 8 matérias e da sua rotina. Cole avisos do Teams/Moodle, conte o que já concluiu ou informe datas de provas!' }
+          { role: 'ai', text: 'Olá, Ithan! Estou sincronizado com suas 8 matérias e seus cadernos do NotebookLM. Cole avisos do Teams/Moodle, diga o que já fez ou ajuste prazos!' }
         ]
       };
     }
@@ -791,9 +784,6 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
       localStorage.setItem(HUB_STORAGE_KEY, JSON.stringify(db));
     }
 
-    // ===========================================================================
-    // INICIALIZAÇÃO E RENDERIZAÇÃO GERAL
-    // ===========================================================================
     window.addEventListener('DOMContentLoaded', () => {
       initDaySelectors();
       injectDailyAutomatedMessages();
@@ -814,11 +804,17 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
     function navigateMainView(viewName) {
       ['discover', 'routine', 'studies'].forEach(v => {
         document.getElementById(`view-${v}`).classList.toggle('hidden', v !== viewName);
-        const navBtn = document.getElementById(`bottomNav-${v}`);
-        if (navBtn) {
-          navBtn.className = (v === viewName)
+        const bBtn = document.getElementById(`bottomNav-${v}`);
+        if (bBtn) {
+          bBtn.className = (v === viewName)
             ? 'flex flex-col items-center gap-1 text-blue-400'
             : 'flex flex-col items-center gap-1 text-gdark-muted';
+        }
+        const sBtn = document.getElementById(`sideNav-${v}`);
+        if (sBtn) {
+          sBtn.className = (v === viewName)
+            ? 'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-sm font-bold bg-blue-600/20 text-blue-400 border border-blue-500/30 transition'
+            : 'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold text-gdark-text hover:bg-gdark-pill transition';
         }
       });
       renderEverything();
@@ -830,9 +826,6 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
       document.getElementById('helpTooltipModal').classList.remove('hidden');
     }
 
-    // ===========================================================================
-    // 1ª PÁGINA: CARROSSEL RÁPIDO (1º QUADRO "ROTINA" + AULAS DO DIA) & DISCOVER
-    // ===========================================================================
     function renderGoogleQuickCards() {
       const row = document.getElementById('googleQuickCardsRow');
       const todayIdx = new Date().getDay();
@@ -842,8 +835,7 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
       document.getElementById('routineCardPendingBadge').textContent = `${pendingCount} pendentes`;
 
       let cardsHtml = `
-        <!-- 1º QUADRO FIXO: ROTINA -->
-        <div onclick="navigateMainView('routine')" class="min-w-[165px] bg-gradient-to-br from-indigo-900/50 to-gdark-surface border border-indigo-500/40 rounded-2xl p-3.5 cursor-pointer shrink-0 flex flex-col justify-between h-24 shadow-md">
+        <div onclick="navigateMainView('routine')" class="min-w-[175px] bg-gradient-to-br from-indigo-900/50 to-gdark-surface border border-indigo-500/40 rounded-2xl p-3.5 cursor-pointer shrink-0 flex flex-col justify-between h-24 shadow-md hover:border-indigo-400 transition">
           <div class="flex items-center justify-between">
             <span class="text-xs font-extrabold uppercase tracking-wider text-indigo-300">⚡ Rotina</span>
             <span class="text-xs bg-indigo-500/30 text-white px-2 py-0.5 rounded-full font-bold">Abrir &rarr;</span>
@@ -855,10 +847,9 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
         </div>
       `;
 
-      // Quadros seguintes dinâmicos com as janelas livres e aulas do dia
       (todaySched.freeWindows || []).forEach(win => {
         cardsHtml += `
-          <div onclick="navigateMainView('studies')" class="min-w-[180px] bg-gdark-surface border border-gdark-border rounded-2xl p-3.5 cursor-pointer shrink-0 flex flex-col justify-between h-24">
+          <div onclick="navigateMainView('studies')" class="min-w-[190px] bg-gdark-surface border border-gdark-border hover:border-emerald-500/40 rounded-2xl p-3.5 cursor-pointer shrink-0 flex flex-col justify-between h-24 transition">
             <div class="flex items-center justify-between text-xs">
               <span class="font-bold text-emerald-400">⏳ Janela Livre</span>
               <span class="text-[10px] text-gdark-muted">${todaySched.name.split('-')[0]}</span>
@@ -870,7 +861,7 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
 
       (todaySched.classes || []).forEach(cls => {
         cardsHtml += `
-          <div onclick="navigateMainView('routine')" class="min-w-[180px] bg-gdark-surface border border-gdark-border rounded-2xl p-3.5 cursor-pointer shrink-0 flex flex-col justify-between h-24">
+          <div onclick="navigateMainView('routine')" class="min-w-[190px] bg-gdark-surface border border-gdark-border hover:border-neutral-500 rounded-2xl p-3.5 cursor-pointer shrink-0 flex flex-col justify-between h-24 transition">
             <div class="flex items-center justify-between text-xs">
               <span class="font-bold text-gdark-muted">📅 Hoje</span>
               <span class="text-[10px] px-1.5 py-0.5 rounded bg-gdark-pill text-gdark-text">Agenda</span>
@@ -888,9 +879,9 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
       ['all', 'ufu', 'tech', 'politics'].forEach(c => {
         const btn = document.getElementById(`catBtn-${c}`);
         if (c === cat) {
-          btn.className = 'px-3.5 py-2 rounded-full text-sm font-semibold bg-gdark-pill border border-blue-500/50 text-white shrink-0';
+          btn.className = 'px-4 py-2 rounded-full text-sm font-semibold bg-gdark-pill border border-blue-500/50 text-white shrink-0';
         } else {
-          btn.className = 'px-3.5 py-2 rounded-full text-sm font-medium bg-gdark-surface border border-gdark-border text-gdark-text shrink-0';
+          btn.className = 'px-4 py-2 rounded-full text-sm font-medium bg-gdark-surface border border-gdark-border text-gdark-text shrink-0';
         }
       });
       renderDiscoverFeed();
@@ -907,21 +898,21 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
         const isLiked = db.savedNews.some(s => s.id === item.id || s.title === item.title);
         const catIcon = item.category === 'ufu' ? '📖' : item.category === 'tech' ? '🤖' : '🌐';
         return `
-          <article class="bg-gdark-card border border-gdark-border rounded-3xl overflow-hidden shadow-lg">
+          <article class="bg-gdark-card border border-gdark-border rounded-3xl overflow-hidden shadow-lg flex flex-col justify-between hover:border-neutral-600 transition">
             <a href="${item.url}" target="_blank" rel="noopener" class="block">
-              <img src="${item.image}" alt="Capa" class="w-full h-52 object-cover bg-neutral-900" onerror="this.src='https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=900&q=80'" />
+              <img src="${item.image}" alt="Capa" class="w-full h-48 object-cover bg-neutral-900" onerror="this.src='https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=900&q=80'" />
               <div class="p-4 pb-2">
-                <h3 class="text-lg font-bold text-white leading-snug">${item.title}</h3>
+                <h3 class="text-base lg:text-lg font-bold text-white leading-snug">${item.title}</h3>
               </div>
             </a>
-            <div class="px-4 pb-3.5 pt-1 flex items-center justify-between text-gdark-muted">
+            <div class="px-4 pb-3.5 pt-2 flex items-center justify-between text-gdark-muted">
               <div class="flex items-center gap-2 text-xs font-medium">
                 <span class="w-6 h-6 rounded-full bg-gdark-pill flex items-center justify-center text-sm">${catIcon}</span>
-                <span>${item.source}</span>
+                <span class="truncate max-w-[130px]">${item.source}</span>
                 <span>•</span>
                 <span>${item.time || 'Recente'}</span>
               </div>
-              <div class="flex items-center gap-4">
+              <div class="flex items-center gap-3">
                 <button onclick="toggleLikeNews('${item.id}')" class="p-1.5 rounded-full hover:bg-gdark-pill transition text-base" title="Curtir e Salvar Notícia">
                   ${isLiked ? '❤️' : '🤍'}
                 </button>
@@ -941,11 +932,8 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
       const item = db.news.find(n => n.id === newsId);
       if (!item) return;
       const idx = db.savedNews.findIndex(s => s.id === newsId || s.title === item.title);
-      if (idx >= 0) {
-        db.savedNews.splice(idx, 1);
-      } else {
-        db.savedNews.unshift({ ...item, savedAt: new Date().toLocaleDateString('pt-BR') });
-      }
+      if (idx >= 0) db.savedNews.splice(idx, 1);
+      else db.savedNews.unshift({ ...item, savedAt: new Date().toLocaleDateString('pt-BR') });
       saveHubDb();
       renderDiscoverFeed();
     }
@@ -955,7 +943,7 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
         navigator.share({ title, text: title, url }).catch(() => {});
       } else {
         navigator.clipboard.writeText(`${title} - ${url}`);
-        alert('Link copiado para a área de transferência!');
+        alert('Link copiado!');
       }
     }
 
@@ -1001,9 +989,6 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
       }
     }
 
-    // ===========================================================================
-    // CHAT GERAL DO TOPO + MOTOR DE NOTIFICAÇÕES (WHATSAPP, SMS E APP)
-    // ===========================================================================
     function toggleQuickTopChat() {
       document.getElementById('quickTopChatDrawer').classList.toggle('hidden');
       renderTopChatHistory();
@@ -1069,7 +1054,7 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
       const btn = document.getElementById('btnTopChatSend');
       btn.textContent = '...';
 
-      const prompt = `Contexto do Usuário (NotebookLM / Memória Sincronizada):\n${db.contextMemory}\n\nPergunta do usuário no chat rápido da página principal: "${text}"\nResponda de forma direta, útil e concisa.`;
+      const prompt = `Contexto do Usuário (NotebookLM / Memória Sincronizada):\n${db.contextMemory}\n\nPergunta do usuário: "${text}"\nResponda de forma direta, útil e concisa.`;
 
       try {
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(apiKey)}`, {
@@ -1083,16 +1068,13 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
         saveHubDb();
         renderTopChatHistory();
       } catch (e) {
-        db.topChat.push({ role: 'ai', text: 'Erro de conexão com a API: ' + e.message });
+        db.topChat.push({ role: 'ai', text: 'Erro: ' + e.message });
         renderTopChatHistory();
       } finally {
         btn.textContent = 'Enviar';
       }
     }
 
-    // ===========================================================================
-    // 2ª PÁGINA: ROTINA (AGENDA E JANELAS LIVRES TOTALMENTE EDITÁVEIS)
-    // ===========================================================================
     function initDaySelectors() {
       const todayIdx = new Date().getDay();
       const sel1 = document.getElementById('routineDaySelector');
@@ -1108,16 +1090,14 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
       const dayIdx = sel ? Number(sel.value) : new Date().getDay();
       const dayData = db.schedule[dayIdx] || db.schedule[1];
 
-      const freeBox = document.getElementById('routineFreeWindowsBox');
-      freeBox.innerHTML = (dayData.freeWindows || []).map(w => `
+      document.getElementById('routineFreeWindowsBox').innerHTML = (dayData.freeWindows || []).map(w => `
         <div class="bg-gdark-bg border border-emerald-500/30 rounded-2xl px-4 py-3 flex items-center justify-between">
           <span class="text-sm font-bold text-white">${w}</span>
           <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300">Livre</span>
         </div>
       `).join('');
 
-      const classesBox = document.getElementById('routineClassesTimeline');
-      classesBox.innerHTML = (dayData.classes || []).map(c => `
+      document.getElementById('routineClassesTimeline').innerHTML = (dayData.classes || []).map(c => `
         <div class="bg-gdark-bg border border-gdark-border rounded-2xl px-4 py-3 flex items-center justify-between">
           <span class="text-sm font-semibold text-gdark-text">${c}</span>
         </div>
@@ -1143,26 +1123,19 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
 
     function saveScheduleEditorChanges() {
       const dayIdx = Number(document.getElementById('editSchedDaySelect').value);
-      const freeLines = document.getElementById('editSchedFreeWindows').value.split('\n').map(s => s.trim()).filter(Boolean);
-      const classLines = document.getElementById('editSchedClasses').value.split('\n').map(s => s.trim()).filter(Boolean);
-
-      db.schedule[dayIdx].freeWindows = freeLines;
-      db.schedule[dayIdx].classes = classLines;
+      db.schedule[dayIdx].freeWindows = document.getElementById('editSchedFreeWindows').value.split('\n').map(s => s.trim()).filter(Boolean);
+      db.schedule[dayIdx].classes = document.getElementById('editSchedClasses').value.split('\n').map(s => s.trim()).filter(Boolean);
       saveHubDb();
       closeScheduleEditorModal();
       renderEverything();
     }
 
-    // ===========================================================================
-    // 3ª PÁGINA: ESTUDOS (FOCO 1 POR VEZ + ASSISTENTE DE ESTUDOS + SEMANA + 8 MATÉRIAS)
-    // ===========================================================================
     function switchStudyTab(tabId) {
       ['focus', 'weekly', 'subjects'].forEach(t => {
         document.getElementById(`studySub-${t}`).classList.toggle('hidden', t !== tabId);
-        const btn = document.getElementById(`studyTabBtn-${t}`);
-        btn.className = (t === tabId)
-          ? 'px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white'
-          : 'px-3 py-1.5 rounded-xl text-xs font-bold text-gdark-muted';
+        document.getElementById(`studyTabBtn-${t}`).className = (t === tabId)
+          ? 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white'
+          : 'px-3.5 py-1.5 rounded-xl text-xs font-bold text-gdark-muted';
       });
       renderEverything();
     }
@@ -1218,12 +1191,18 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
       }
 
       const task = sorted[0];
-      const subj = db.subjects.find(s => s.id === task.subjectId) || { name: 'Matéria', prof: '' };
+      const subj = db.subjects.find(s => s.id === task.subjectId) || { id: 'algoritmos', name: 'Matéria', prof: '' };
+      const nbUrl = NOTEBOOKLM_LINKS[subj.id] || 'https://notebooklm.google.com/';
 
       box.innerHTML = `
-        <div class="bg-gdark-bg border border-gdark-border rounded-2xl p-4 space-y-3.5">
+        <div class="bg-gdark-bg border border-gdark-border rounded-2xl p-5 space-y-4">
           <div class="flex flex-wrap items-center justify-between gap-2">
-            <span class="text-xs font-extrabold px-3 py-1 rounded-lg bg-indigo-600 text-white">${subj.name} • Prof(a). ${subj.prof}</span>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-extrabold px-3 py-1 rounded-lg bg-indigo-600 text-white">${subj.name} • Prof(a). ${subj.prof}</span>
+              <a href="${nbUrl}" target="_blank" class="text-xs font-bold px-2.5 py-1 rounded-lg bg-gdark-pill hover:bg-neutral-700 text-indigo-300 border border-indigo-500/30">
+                📖 Abrir NotebookLM &rarr;
+              </a>
+            </div>
             <div class="flex items-center gap-2 text-xs font-bold">
               <span class="px-2.5 py-0.5 rounded-lg ${task.priority === 'alta' ? 'bg-rose-500/20 text-rose-300' : 'bg-amber-500/20 text-amber-300'} uppercase">${task.priority}</span>
               <span class="px-2.5 py-0.5 rounded-lg bg-gdark-pill text-gdark-text">📅 ${formatBrDate(task.due)}</span>
@@ -1233,7 +1212,7 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
 
           <h3 class="text-lg sm:text-xl font-extrabold text-white leading-snug">${task.title}</h3>
 
-          <div class="flex gap-2 pt-1">
+          <div class="flex gap-2.5 pt-1">
             <button onclick="toggleTaskDone('${task.id}')" class="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition">
               ✓ Concluir Tarefa
             </button>
@@ -1265,7 +1244,6 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
       }
     }
 
-    // CRONÔMETRO DE ESTUDO
     function toggleStudyTimer() {
       const btn = document.getElementById('btnStudyTimer');
       if (studyTimerRunning) {
@@ -1300,7 +1278,6 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
       document.getElementById('btnStudyTimer').textContent = '▶ Iniciar';
     }
 
-    // ASSISTENTE DE ESTUDOS UNIFICADO (INTERPRETA AVISOS, PROVAS, TAREFAS FEITAS E IMPREVISTOS)
     function renderStudyChat() {
       const box = document.getElementById('studyChatMessages');
       if (!box) return;
@@ -1342,17 +1319,16 @@ Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 1
       btn.textContent = '...';
 
       const prompt = `Você é o Assistente de Estudos IA do Ithan (Engenharia Mecatrônica UFU).
-Memória Sincronizada (NotebookLM / Contexto):
+Memória Sincronizada (Seus 9 Cadernos do NotebookLM / Contexto):
 ${db.contextMemory}
 
 Matérias (IDs): algoritmos, calculo2, fisica1, algebralinear, estatistica, geometria, labfisica, seguranca.
 Fila atual de tarefas:
 ${JSON.stringify(db.tasks)}
 
-Mensagem do aluno (pode ser aviso colado do Teams/Moodle, aviso de que já fez uma tarefa, nova data de prova ou imprevisto):
-"${userText}"
+Mensagem do aluno: "${userText}"
 
-Atualize o sistema automaticamente e retorne EXCLUSIVAMENTE um JSON válido neste formato:
+Atualize o sistema automaticamente e retorne EXCLUSIVAMENTE um JSON válido:
 {
   "reply": "Resposta curta e direta confirmando as alterações feitas.",
   "createTasks": [
@@ -1416,16 +1392,13 @@ Atualize o sistema automaticamente e retorne EXCLUSIVAMENTE um JSON válido nest
         saveHubDb();
         renderEverything();
       } catch (e) {
-        db.studyChat.push({ role: 'ai', text: 'Erro ao processar: ' + e.message });
+        db.studyChat.push({ role: 'ai', text: 'Erro: ' + e.message });
         renderStudyChat();
       } finally {
         btn.textContent = 'Enviar';
       }
     }
 
-    // ===========================================================================
-    // SUBPÁGINA SEMANA (COM BOTÃO CONCLUÍDO, MENU ☰ E CORES MANTIDAS)
-    // ===========================================================================
     function toggleWeeklyMenu() {
       document.getElementById('weeklyConfigDropdown').classList.toggle('hidden');
     }
@@ -1485,9 +1458,6 @@ Atualize o sistema automaticamente e retorne EXCLUSIVAMENTE um JSON válido nest
       renderEverything();
     }
 
-    // ===========================================================================
-    // SUBPÁGINA AS 8 MATÉRIAS (CORES MANTIDAS)
-    // ===========================================================================
     function renderSubjectsGrid() {
       if (activeSubjectDetailId) {
         document.getElementById('subjectsGridContainer').classList.add('hidden');
@@ -1502,16 +1472,18 @@ Atualize o sistema automaticamente e retorne EXCLUSIVAMENTE um JSON válido nest
       grid.innerHTML = db.subjects.map(s => {
         const count = db.tasks.filter(t => t.subjectId === s.id && t.status !== 'done').length;
         return `
-          <div onclick="openSubjectSingleView('${s.id}')" class="bg-gdark-surface border border-gdark-border hover:border-indigo-500/50 rounded-3xl p-4 cursor-pointer space-y-2.5 shadow-md">
-            <div class="flex items-center justify-between">
-              <h3 class="text-base font-extrabold text-white">${s.name}</h3>
-              <span class="text-xs font-bold px-2.5 py-0.5 rounded-full ${count > 0 ? 'bg-amber-500/20 text-amber-300' : 'bg-emerald-500/20 text-emerald-300'}">${count} pend.</span>
+          <div onclick="openSubjectSingleView('${s.id}')" class="bg-gdark-surface border border-gdark-border hover:border-indigo-500/50 rounded-3xl p-4 cursor-pointer space-y-2.5 shadow-md flex flex-col justify-between">
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <h3 class="text-base font-extrabold text-white">${s.name}</h3>
+                <span class="text-xs font-bold px-2.5 py-0.5 rounded-full ${count > 0 ? 'bg-amber-500/20 text-amber-300' : 'bg-emerald-500/20 text-emerald-300'}">${count} pend.</span>
+              </div>
+              <div class="text-xs text-gdark-muted">Prof(a). <strong class="text-white">${s.prof}</strong> • ${s.workload}h</div>
+              <div class="text-xs bg-gdark-bg border border-gdark-border rounded-xl px-3 py-2 text-gdark-text">
+                📊 Provas: <strong>${s.exams}</strong>
+              </div>
             </div>
-            <div class="text-xs text-gdark-muted">Prof(a). <strong class="text-white">${s.prof}</strong> • ${s.workload}h</div>
-            <div class="text-xs bg-gdark-bg border border-gdark-border rounded-xl px-3 py-2 text-gdark-text">
-              📊 Provas: <strong>${s.exams}</strong>
-            </div>
-            <div class="flex items-center justify-between text-xs font-bold pt-1">
+            <div class="flex items-center justify-between text-xs font-bold pt-2">
               <span class="uppercase ${s.importance === 'alto' ? 'text-emerald-400' : s.importance === 'medio' ? 'text-amber-400' : 'text-rose-400'}">Imp: ${s.importance}</span>
               <span class="uppercase text-purple-300">Dif: ${s.difficulty}</span>
             </div>
@@ -1533,12 +1505,16 @@ Atualize o sistema automaticamente e retorne EXCLUSIVAMENTE um JSON válido nest
     function renderSubjectSingleView(subjId) {
       const s = db.subjects.find(x => x.id === subjId);
       if (!s) return;
+      const nbUrl = NOTEBOOKLM_LINKS[s.id] || 'https://notebooklm.google.com/';
       document.getElementById('subjectSingleHeader').innerHTML = `
-        <div class="flex items-center justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 class="text-xl font-extrabold text-white">${s.name}</h2>
-            <p class="text-xs text-gdark-muted">Prof(a). ${s.prof} • Critério: ${s.exams}</p>
+            <p class="text-xs text-gdark-muted">Prof(a). ${s.prof} • Critério de Notas: ${s.exams}</p>
           </div>
+          <a href="${nbUrl}" target="_blank" class="px-4 py-2 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs">
+            📖 Abrir Caderno no NotebookLM &rarr;
+          </a>
         </div>
       `;
       document.getElementById('btnAddTaskForSubject').onclick = () => openTaskModal(s.id);
@@ -1584,9 +1560,6 @@ Atualize o sistema automaticamente e retorne EXCLUSIVAMENTE um JSON válido nest
       }
     }
 
-    // ===========================================================================
-    // CONFIGURAÇÕES GLOBAIS (SALVOS, MEMÓRIA NOTEBOOKLM E AVISOS EDITÁVEIS)
-    // ===========================================================================
     function openGlobalSettings(defaultTab = 'config') {
       document.getElementById('cfgApiKey').value = localStorage.getItem(API_KEY_STORAGE) || '';
       document.getElementById('cfgNotebookContext').value = db.contextMemory || DEFAULT_CONTEXT_MEMORY;
@@ -1616,7 +1589,7 @@ Atualize o sistema automaticamente e retorne EXCLUSIVAMENTE um JSON válido nest
       if (k) localStorage.setItem(API_KEY_STORAGE, k);
       db.contextMemory = document.getElementById('cfgNotebookContext').value.trim();
       saveHubDb();
-      alert('Configurações e Memória Sincronizada salvas!');
+      alert('Configurações salvas!');
     }
 
     function renderSavedNewsInModal() {
@@ -1659,38 +1632,29 @@ Atualize o sistema automaticamente e retorne EXCLUSIVAMENTE um JSON válido nest
     }
 
     function requestBrowserNotificationPerm() {
-      if (!('Notification' in window)) {
-        alert('Este navegador não suporta notificações.');
-        return;
-      }
+      if (!('Notification' in window)) return;
       Notification.requestPermission().then(p => {
-        alert(p === 'granted' ? 'Notificações ativadas com sucesso!' : 'Permissão negada pelo navegador.');
+        alert(p === 'granted' ? 'Notificações ativadas!' : 'Permissão negada.');
       });
     }
 
     async function sendTestNotificationNow() {
       const rem = db.reminders[0];
-      // 1. Adiciona ao Chat do Topo
       db.topChat.push({ role: 'ai', text: `🔔 **${rem.title} (${rem.time}):**\n${rem.msg}` });
       saveHubDb();
       renderTopChatHistory();
-
-      // 2. Dispara Notificação Nativa do Sistema se permitido
       if ('Notification' in window && Notification.permission === 'granted') {
         new Notification(rem.title, { body: rem.msg, icon: './icon-192.png' });
       }
-
-      // 3. Se configurou tópico ntfy.sh, dispara Push em segundo plano
       if (db.ntfyTopic) {
         fetch(`https://ntfy.sh/${encodeURIComponent(db.ntfyTopic)}`, {
           method: 'POST',
           body: `${rem.title}: ${rem.msg}`
         }).catch(() => {});
       }
-      alert('Aviso enviado para o Chat Principal e Notificação disparada!');
+      alert('Aviso disparado!');
     }
 
-    // MODAL NOVA TAREFA
     function openTaskModal(defaultSubj) {
       const sel = document.getElementById('newTaskSubject');
       sel.innerHTML = db.subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
