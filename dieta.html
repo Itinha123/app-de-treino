@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#191919" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>NutriUFU — Dieta & Hidratação IA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            notion: {
+              bg: '#191919',
+              card: '#202020',
+              hover: '#2a2a2a',
+              border: '#2f2f2f',
+              text: '#ebebeb',
+              muted: '#9b9b9b'
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body {
+      background-color: #191919;
+      color: #ebebeb;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .bottle-active {
+      background: linear-gradient(180deg, rgba(14,165,233,0.28) 0%, rgba(2,132,199,0.5) 100%);
+      border-color: #38bdf8 !important;
+      color: #e0f2fe;
+    }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #191919; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col pb-24">
+
+  <!-- TOP HEADER -->
+  <header class="sticky top-0 z-30 bg-[#191919]/95 backdrop-blur border-b border-notion-border px-4 py-3">
+    <div class="max-w-lg mx-auto flex items-center justify-between">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <h1 class="text-base font-bold tracking-tight">NutriUFU • Vision Tracker</h1>
+        </div>
+        <p id="currentDateLabel" class="text-xs text-notion-muted mt-0.5"></p>
+      </div>
+      <div class="flex items-center gap-2">
+        <input type="date" id="datePicker" class="bg-notion-card border border-notion-border text-xs rounded-lg px-2.5 py-1.5 text-notion-text focus:outline-none focus:border-emerald-500" />
+        <button onclick="switchTab('settings')" class="p-2 rounded-lg bg-notion-card border border-notion-border hover:bg-notion-hover" title="Configurações e API">
+          <svg class="w-4 h-4 text-notion-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 max-w-lg w-full mx-auto px-4 pt-4 space-y-5">
+
+    <!-- SMART SCHEDULE RADAR BANNER -->
+    <div id="scheduleBanner" class="bg-notion-card border border-notion-border rounded-xl p-3.5 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="text-[11px] uppercase tracking-wider text-amber-400 font-semibold" id="nextAlarmTag">Radar de Horários</div>
+          <div class="text-xs font-medium text-notion-text mt-0.5" id="nextAlarmText">Carregando próximo horário...</div>
+        </div>
+      </div>
+      <button onclick="enableNotifications()" id="notifBtn" class="text-xs px-2.5 py-1.5 rounded-lg bg-notion-hover border border-notion-border text-notion-muted hover:text-white shrink-0">
+        Ativar Alertas
+      </button>
+    </div>
+
+    <!-- ==================== TAB 1: HOJE (DIÁRIO) ==================== -->
+    <section id="tab-today" class="space-y-5">
+
+      <!-- MACROS DO DIA CARD -->
+      <div class="bg-notion-card border border-notion-border rounded-2xl p-4 space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-sm font-bold text-white">Balanço do Dia</h2>
+            <p class="text-[11px] text-notion-muted">Referência para média semanal</p>
+          </div>
+          <div class="text-right">
+            <span id="dayKcalVal" class="text-lg font-extrabold text-white">0</span>
+            <span class="text-xs text-notion-muted"> / 2800 kcal (teto)</span>
+          </div>
+        </div>
+
+        <!-- Barra de Calorias -->
+        <div class="w-full bg-[#141414] h-2 rounded-full overflow-hidden">
+          <div id="dayKcalBar" class="bg-emerald-500 h-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+
+        <!-- 3 Colunas de Macros -->
+        <div class="grid grid-cols-3 gap-2.5 pt-1">
+          <!-- Proteína -->
+          <div class="bg-[#161616] border border-notion-border rounded-xl p-2.5">
+            <div class="flex justify-between items-center text-[11px]">
+              <span class="text-rose-400 font-semibold">Proteína</span>
+              <span class="text-notion-muted">mín 140g</span>
+            </div>
+            <div class="mt-1 flex items-baseline gap-1">
+              <span id="dayProtVal" class="text-base font-bold">0g</span>
+            </div>
+            <div class="w-full bg-[#242424] h-1.5 rounded-full mt-2 overflow-hidden">
+              <div id="dayProtBar" class="bg-rose-500 h-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <!-- Carboidrato -->
+          <div class="bg-[#161616] border border-notion-border rounded-xl p-2.5">
+            <div class="flex justify-between items-center text-[11px]">
+              <span class="text-amber-400 font-semibold">Carbo</span>
+              <span class="text-notion-muted">mín 180g</span>
+            </div>
+            <div class="mt-1 flex items-baseline gap-1">
+              <span id="dayCarbVal" class="text-base font-bold">0g</span>
+            </div>
+            <div class="w-full bg-[#242424] h-1.5 rounded-full mt-2 overflow-hidden">
+              <div id="dayCarbBar" class="bg-amber-400 h-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <!-- Gordura -->
+          <div class="bg-[#161616] border border-notion-border rounded-xl p-2.5">
+            <div class="flex justify-between items-center text-[11px]">
+              <span class="text-sky-400 font-semibold">Gordura</span>
+              <span class="text-notion-muted">mín 40g</span>
+            </div>
+            <div class="mt-1 flex items-baseline gap-1">
+              <span id="dayFatVal" class="text-base font-bold">0g</span>
+            </div>
+            <div class="w-full bg-[#242424] h-1.5 rounded-full mt-2 overflow-hidden">
+              <div id="dayFatBar" class="bg-sky-400 h-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCANNER IA (FOTO DA BANDEJA DO RU OU PRATO) -->
+      <div class="bg-gradient-to-br from-emerald-950/40 via-notion-card to-notion-card border border-emerald-500/30 rounded-2xl p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">Visão Computacional • RU UFU</span>
+            <h3 class="text-sm font-bold text-white mt-1">Analisar Refeição por Foto</h3>
+            <p class="text-xs text-notion-muted">Estima gramas, macros e vitaminas pela bandeja ou prato</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5 pt-1">
+          <!-- Botão Câmera / Galeria -->
+          <label class="cursor-pointer flex items-center justify-center gap-2 py-3 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition shadow-lg shadow-emerald-950/50">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <span>Tirar Foto / Galeria</span>
+            <input type="file" id="cameraInput" accept="image/*" class="hidden" onchange="handleImageUpload(event)" />
+          </label>
+
+          <!-- Botão Descrever c/ IA (Quando esquecer a foto) -->
+          <button onclick="openTextAiModal()" class="flex items-center justify-center gap-2 py-3 px-3 rounded-xl bg-notion-hover border border-notion-border hover:border-emerald-500/40 text-notion-text font-semibold text-xs transition">
+            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+            </svg>
+            <span>Descrever sem Foto</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ATALHOS RÁPIDOS (WHEY + CREATINA + LANCHES) -->
+      <div class="bg-notion-card border border-notion-border rounded-2xl p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-notion-muted">Registro Rápido (1 Toque)</h3>
+          <span id="creatineBadge" class="text-[11px] px-2 py-0.5 rounded bg-purple-500/15 text-purple-300 border border-purple-500/30">Creatina 6g: Pendente</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="quickAddPreset('whey_manha')" class="flex flex-col items-start p-2.5 rounded-xl bg-[#161616] border border-notion-border hover:border-emerald-500/40 transition text-left">
+            <div class="flex items-center justify-between w-full">
+              <span class="text-xs font-bold text-white">☀️ Whey Manhã + Creatina</span>
+              <span class="text-[10px] text-emerald-400 font-semibold">08:05</span>
+            </div>
+            <span class="text-[11px] text-notion-muted mt-1">1,5 scoop (37.5g P) + 6g Creatina</span>
+          </button>
+
+          <button onclick="quickAddPreset('whey_noite')" class="flex flex-col items-start p-2.5 rounded-xl bg-[#161616] border border-notion-border hover:border-emerald-500/40 transition text-left">
+            <div class="flex items-center justify-between w-full">
+              <span class="text-xs font-bold text-white">🌙 Whey Noite (1,5 sc)</span>
+              <span class="text-[10px] text-sky-400 font-semibold">23:45</span>
+            </div>
+            <span class="text-[11px] text-notion-muted mt-1">1,5 scoop (37.5g P • 180 kcal)</span>
+          </button>
+
+          <button onclick="quickAddPreset('whey_1scoop')" class="flex flex-col items-start p-2.5 rounded-xl bg-[#161616] border border-notion-border hover:border-emerald-500/40 transition text-left">
+            <span class="text-xs font-bold text-white">🥤 +1 Scoop Isolado</span>
+            <span class="text-[11px] text-notion-muted mt-0.5">25g Proteína • 120 kcal</span>
+          </button>
+
+          <button onclick="openManualModal()" class="flex flex-col items-start p-2.5 rounded-xl bg-[#161616] border border-notion-border hover:border-emerald-500/40 transition text-left">
+            <span class="text-xs font-bold text-white">🍌 Fruta / Extra Manual</span>
+            <span class="text-[11px] text-notion-muted mt-0.5">Adicionar item avulso</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- HIDRATAÇÃO: 6 GARRAFAS DE 500ML (3 LITROS) -->
+      <div class="bg-notion-card border border-notion-border rounded-2xl p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-sm font-bold text-white flex items-center gap-1.5">
+              <span>💧 Meta de Água Diária</span>
+            </h3>
+            <p class="text-[11px] text-notion-muted">Toque em cada garrafa de 500ml concluída</p>
+          </div>
+          <div class="text-right">
+            <span id="waterTotalLabel" class="text-base font-extrabold text-sky-400">0.0 L</span>
+            <span class="text-xs text-notion-muted"> / 3.0 L</span>
+          </div>
+        </div>
+
+        <div id="bottlesGrid" class="grid grid-cols-6 gap-2 pt-1">
+          <!-- Renderizado via JS -->
+        </div>
+      </div>
+
+      <!-- HISTÓRICO DE REFEIÇÕES DO DIA -->
+      <div class="bg-notion-card border border-notion-border rounded-2xl p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-bold text-white">Refeições Registradas Hoje</h3>
+          <span id="mealCountLabel" class="text-xs text-notion-muted">0 registros</span>
+        </div>
+
+        <div id="todayMealsList" class="space-y-2.5">
+          <!-- Renderizado via JS -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==================== TAB 2: SEMANA & MERCADO ==================== -->
+    <section id="tab-weekly" class="hidden space-y-5">
+
+      <!-- MÉDIA MÓVEL SEMANAL (7 DIAS) -->
+      <div class="bg-notion-card border border-notion-border rounded-2xl p-4 space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-sm font-bold text-white">Média Semanal (Últimos 7 Dias)</h2>
+            <p class="text-[11px] text-notion-muted">Cálculo baseado nos dias com registro na semana</p>
+          </div>
+          <span id="activeDaysBadge" class="text-xs px-2.5 py-1 rounded-lg bg-notion-hover border border-notion-border text-notion-muted">0 dias</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3" id="weeklyAveragesGrid">
+          <!-- Renderizado via JS -->
+        </div>
+      </div>
+
+      <!-- RADAR DE VITAMINAS & MICRONUTRIENTES -->
+      <div class="bg-notion-card border border-notion-border rounded-2xl p-4 space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-sm font-bold text-white">Radar de Vitaminas & Minerais</h3>
+            <p class="text-[11px] text-notion-muted">Frequência de nutrientes detectados nas suas refeições</p>
+          </div>
+        </div>
+
+        <div id="micronutrientsGrid" class="grid grid-cols-3 gap-2">
+          <!-- Renderizado via JS -->
+        </div>
+      </div>
+
+      <!-- LISTA DE COMPRAS INTELIGENTE (SUPERMERCADO) -->
+      <div class="bg-gradient-to-br from-amber-950/30 via-notion-card to-notion-card border border-amber-500/30 rounded-2xl p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-300">Compra Inteligente</span>
+            <h3 class="text-sm font-bold text-white mt-1">O que priorizar no Mercado</h3>
+            <p class="text-xs text-notion-muted">Sugestões automáticas para cobrir lacunas de macros e vitaminas da semana</p>
+          </div>
+          <button onclick="generateAiWeeklyAudit()" id="btnAiAudit" class="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs transition shrink-0">
+            Auditoria IA
+          </button>
+        </div>
+
+        <div id="smartGroceryList" class="space-y-2 text-xs">
+          <!-- Renderizado via JS -->
+        </div>
+
+        <div id="aiAuditResult" class="hidden mt-3 p-3 rounded-xl bg-[#141414] border border-notion-border text-xs text-notion-text space-y-2 leading-relaxed"></div>
+      </div>
+
+      <!-- TABELA DOS ÚLTIMOS 7 DIAS -->
+      <div class="bg-notion-card border border-notion-border rounded-2xl p-4 space-y-3">
+        <h3 class="text-sm font-bold text-white">Resumo Diário (7 Dias)</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="text-notion-muted border-b border-notion-border">
+                <th class="pb-2">Dia</th>
+                <th class="pb-2">Prot</th>
+                <th class="pb-2">Carb</th>
+                <th class="pb-2">Gord</th>
+                <th class="pb-2">Kcal</th>
+                <th class="pb-2">Água</th>
+              </tr>
+            </thead>
+            <tbody id="weeklyTableBody" class="divide-y divide-notion-border"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==================== TAB 3: CONFIG & HORÁRIOS ==================== -->
+    <section id="tab-settings" class="hidden space-y-5">
+
+      <!-- CHAVE API GEMINI -->
+      <div class="bg-notion-card border border-notion-border rounded-2xl p-4 space-y-3">
+        <h2 class="text-sm font-bold text-white">Chave de API do Google Gemini</h2>
+        <p class="text-xs text-notion-muted">Sua chave fica salva exclusivamente na memória local (<code class="text-emerald-400">localStorage</code>) do seu celular.</p>
+
+        <div class="space-y-2">
+          <label class="text-xs text-notion-muted block">API Key (<code class="text-notion-text">AIza...</code>)</label>
+          <input type="password" id="apiKeyInput" placeholder="Cole sua chave AIzaSy... aqui" class="w-full bg-[#141414] border border-notion-border rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500" />
+        </div>
+
+        <div class="space-y-2">
+          <label class="text-xs text-notion-muted block">Modelo Gemini para Visão</label>
+          <select id="geminiModelSelect" class="w-full bg-[#141414] border border-notion-border rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500">
+            <option value="gemini-2.5-flash">gemini-2.5-flash (Recomendado / Rápido)</option>
+            <option value="gemini-2.0-flash">gemini-2.0-flash (Alta Compatibilidade)</option>
+            <option value="gemini-1.5-flash">gemini-1.5-flash (Estável)</option>
+          </select>
+        </div>
+
+        <div class="flex gap-2 pt-1">
+          <button onclick="saveApiSettings()" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition">
+            Salvar Chave
+          </button>
+          <button onclick="testGeminiConnection()" class="px-4 py-2.5 rounded-xl bg-notion-hover border border-notion-border text-xs font-semibold hover:text-white transition">
+            Testar Chave
+          </button>
+        </div>
+        <p id="apiStatusMsg" class="text-xs text-notion-muted"></p>
+      </div>
+
+      <!-- GRADE DE HORÁRIOS CONFIGURADOS -->
+      <div class="bg-notion-card border border-notion-border rounded-2xl p-4 space-y-3">
+        <h3 class="text-sm font-bold text-white">Grade de Notificações Programadas</h3>
+        <div class="space-y-2 text-xs">
+          <div class="flex justify-between py-2 border-b border-notion-border">
+            <span class="text-notion-muted">☀️ 1ª Porção Whey (1,5 sc + 6g Creatina)</span>
+            <span class="font-bold text-emerald-400">Todos os dias • 08:05</span>
+          </div>
+          <div class="flex justify-between py-2 border-b border-notion-border">
+            <span class="text-notion-muted">🍛 Almoço RU UFU (Seg a Sex)</span>
+            <span class="font-bold text-white">12:50 – 13:05</span>
+          </div>
+          <div class="flex justify-between py-2 border-b border-notion-border">
+            <span class="text-notion-muted">🍛 Janta RU (Segunda-feira)</span>
+            <span class="font-bold text-white">19:05 – 19:20</span>
+          </div>
+          <div class="flex justify-between py-2 border-b border-notion-border">
+            <span class="text-notion-muted">🍛 Janta RU (Terça a Sexta)</span>
+            <span class="font-bold text-white">18:20 – 18:40</span>
+          </div>
+          <div class="flex justify-between py-2 border-b border-notion-border">
+            <span class="text-notion-muted">🍽️ Fim de Semana (Almoço / Janta)</span>
+            <span class="font-bold text-white">13:00 e 22:00</span>
+          </div>
+          <div class="flex justify-between py-2">
+            <span class="text-notion-muted">🌙 Revisão Noturna + Whey Final</span>
+            <span class="font-bold text-sky-400">Todos os dias • 23:45</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- BACKUP DE DADOS -->
+      <div class="bg-notion-card border border-notion-border rounded-2xl p-4 space-y-3">
+        <h3 class="text-sm font-bold text-white">Backup de Dados</h3>
+        <div class="flex gap-2">
+          <button onclick="exportDataJson()" class="flex-1 py-2 rounded-xl bg-notion-hover border border-notion-border text-xs font-semibold">
+            Exportar Backup JSON
+          </button>
+          <button onclick="clearTodayData()" class="px-3 py-2 rounded-xl bg-rose-950/50 border border-rose-500/30 text-rose-300 text-xs font-semibold">
+            Zerar Dia Atual
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ==================== MODAL DE INSPEÇÃO DA FOTO / IA ==================== -->
+  <div id="inspectionModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-notion-card border border-notion-border w-full max-w-lg rounded-t-2xl sm:rounded-2xl max-h-[90vh] flex flex-col overflow-hidden">
+      <div class="px-4 py-3 border-b border-notion-border flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-bold text-white">Auditoria da Refeição (IA)</h3>
+          <p class="text-[11px] text-notion-muted">Ajuste os gramas se necessário — os macros recalculam sozinhos</p>
+        </div>
+        <button onclick="closeInspectionModal()" class="text-notion-muted hover:text-white text-lg px-2">&times;</button>
+      </div>
+
+      <div class="p-4 overflow-y-auto space-y-4 flex-1">
+        <!-- Preview da Foto -->
+        <div id="modalImagePreviewBox" class="hidden">
+          <img id="modalImagePreview" class="w-full h-40 object-cover rounded-xl border border-notion-border" alt="Refeição" />
+        </div>
+
+        <!-- Status de Carregamento -->
+        <div id="aiLoadingBox" class="hidden py-8 text-center space-y-2">
+          <div class="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p class="text-xs font-semibold text-emerald-400">Analisando bandeja e estimando massas (g)...</p>
+          <p class="text-[11px] text-notion-muted">Calibrando proporções e micronutrientes</p>
+        </div>
+
+        <!-- Conteúdo Identificado -->
+        <div id="aiResultsContent" class="space-y-3 hidden">
+          <div>
+            <label class="text-[11px] text-notion-muted">Nome da Refeição</label>
+            <input type="text" id="inspectedMealTitle" class="w-full mt-1 bg-[#141414] border border-notion-border rounded-lg px-3 py-1.5 text-xs text-white font-semibold" />
+          </div>
+
+          <div class="space-y-2" id="inspectedItemsList">
+            <!-- Itens editáveis via JS -->
+          </div>
+
+          <button onclick="addBlankInspectedItem()" class="w-full py-1.5 rounded-lg border border-dashed border-notion-border text-xs text-notion-muted hover:text-white">
+            + Adicionar alimento que faltou
+          </button>
+
+          <!-- Vitaminas detectadas -->
+          <div class="bg-[#141414] border border-notion-border rounded-xl p-2.5">
+            <span class="text-[10px] uppercase tracking-wider text-notion-muted font-bold block mb-1.5">Micronutrientes Identificados nesta Refeição</span>
+            <div id="inspectedMicrosBadges" class="flex flex-wrap gap-1.5"></div>
+          </div>
+
+          <!-- Resumo Total da Refeição -->
+          <div class="bg-emerald-950/30 border border-emerald-500/30 rounded-xl p-3 flex justify-between items-center text-xs">
+            <span class="font-bold text-emerald-300">Total da Refeição:</span>
+            <div class="flex gap-3 font-bold">
+              <span id="inspectedTotalProt" class="text-rose-400">0g P</span>
+              <span id="inspectedTotalCarb" class="text-amber-400">0g C</span>
+              <span id="inspectedTotalFat" class="text-sky-400">0g G</span>
+              <span id="inspectedTotalKcal" class="text-white">0 kcal</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 border-t border-notion-border flex gap-2">
+        <button onclick="closeInspectionModal()" class="px-4 py-2.5 rounded-xl bg-notion-hover text-xs font-semibold text-notion-muted">
+          Cancelar
+        </button>
+        <button onclick="confirmInspectedMeal()" id="btnConfirmMeal" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs">
+          Confirmar e Somar ao Dia
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL DESCREVER POR TEXTO / MANUAL ==================== -->
+  <div id="textAiModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-notion-card border border-notion-border w-full max-w-md rounded-2xl p-4 space-y-3">
+      <div class="flex justify-between items-center">
+        <h3 class="text-sm font-bold text-white">Descrever Refeição ou Lanche</h3>
+        <button onclick="closeTextAiModal()" class="text-notion-muted hover:text-white text-lg">&times;</button>
+      </div>
+      <p class="text-xs text-notion-muted">Esqueceu a foto? Descreva o que comeu (ex.: <i>"Almoço RU com arroz, feijão, iscas de carne acebolada e 1 laranja"</i> ou <i>"2 bananas com aveia"</i>).</p>
+      <textarea id="textAiPrompt" rows="3" placeholder="Digite aqui os alimentos e quantidades aproximadas..." class="w-full bg-[#141414] border border-notion-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-emerald-500"></textarea>
+      <div class="flex gap-2">
+        <button onclick="closeTextAiModal()" class="px-4 py-2 rounded-xl bg-notion-hover text-xs text-notion-muted">Cancelar</button>
+        <button onclick="analyzeTextMealWithAi()" class="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs">Calcular com IA</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAVIGATION BAR -->
+  <nav class="fixed bottom-0 inset-x-0 z-40 bg-[#191919]/95 backdrop-blur border-t border-notion-border">
+    <div class="max-w-lg mx-auto grid grid-cols-3 py-2">
+      <button onclick="switchTab('today')" id="nav-today" class="flex flex-col items-center gap-1 text-emerald-400">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+        </svg>
+        <span class="text-[11px] font-semibold">Hoje</span>
+      </button>
+
+      <button onclick="switchTab('weekly')" id="nav-weekly" class="flex flex-col items-center gap-1 text-notion-muted">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+        <span class="text-[11px] font-semibold">Relatório & Mercado</span>
+      </button>
+
+      <button onclick="switchTab('settings')" id="nav-settings" class="flex flex-col items-center gap-1 text-notion-muted">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+        </svg>
+        <span class="text-[11px] font-semibold">Chave API & Alertas</span>
+      </button>
+    </div>
+  </nav>
+
+  <script>
+    // ==================== CONFIGURAÇÕES & METAS ====================
+    const TARGETS = {
+      proteinMin: 140,
+      carbsMin: 180,
+      fatMin: 40,
+      kcalMax: 2800,
+      waterBottles: 6 // 6 x 500ml = 3.0L
+    };
+
+    const ESSENTIAL_MICROS = [
+      { id: 'Ferro', label: 'Ferro', foods: 'Carne vermelha, feijão preto, lentilha, espinafre' },
+      { id: 'Vitamina C', label: 'Vitamina C', foods: 'Laranja, limão, mexerica, acerola, brócolis' },
+      { id: 'Vitamina A', label: 'Vitamina A', foods: 'Cenoura, abóbora, ovos, mamão, manga' },
+      { id: 'Complexo B', label: 'Complexo B', foods: 'Ovos, frango, carne, aveia, banana' },
+      { id: 'Cálcio', label: 'Cálcio', foods: 'Leite, iogurte natural, queijo, couve' },
+      { id: 'Magnésio', label: 'Magnésio', foods: 'Aveia, banana, amendoim, arroz integral, feijão' },
+      { id: 'Zinco', label: 'Zinco', foods: 'Carne bovina, frango, ovos, amendoim' },
+      { id: 'Potássio', label: 'Potássio', foods: 'Banana, batata, água de coco, abacate, feijão' },
+      { id: 'Fibras', label: 'Fibras', foods: 'Aveia, frutas com casca, feijão, salada crua' }
+    ];
+
+    const STORAGE_KEY = 'nutri_ufu_db_v1';
+    const API_KEY_STORAGE = 'nutri_ufu_gemini_key';
+    const MODEL_STORAGE = 'nutri_ufu_gemini_model';
+
+    let db = loadDatabase();
+    let currentSelectedDate = getTodayISO();
+    let currentInspectionData = null;
+    let lastNotifiedSlot = '';
+
+    // ==================== INICIALIZAÇÃO ====================
+    function getTodayISO() {
+      const now = new Date();
+      const offset = now.getTimezoneOffset() * 60000;
+      return new Date(now.getTime() - offset).toISOString().split('T')[0];
+    }
+
+    function loadDatabase() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : { days: {} };
+      } catch (e) {
+        return { days: {} };
+      }
+    }
+
+    function saveDatabase() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+    }
+
+    function getDayRecord(dateStr) {
+      if (!db.days[dateStr]) {
+        db.days[dateStr] = {
+          bottles: [false, false, false, false, false, false],
+          creatineTaken: false,
+          meals: []
+        };
+      }
+      return db.days[dateStr];
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const picker = document.getElementById('datePicker');
+      picker.value = currentSelectedDate;
+      picker.addEventListener('change', (e) => {
+        currentSelectedDate = e.target.value || getTodayISO();
+        renderAll();
+      });
+
+      // Carregar API Key salva
+      const savedKey = localStorage.getItem(API_KEY_STORAGE) || '';
+      const savedModel = localStorage.getItem(MODEL_STORAGE) || 'gemini-2.5-flash';
+      document.getElementById('apiKeyInput').value = savedKey;
+      document.getElementById('geminiModelSelect').value = savedModel;
+
+      updateScheduleBanner();
+      setInterval(updateScheduleBanner, 30000);
+      renderAll();
+    });
+
+    // ==================== NAVEGAÇÃO ENTRE ABAS ====================
+    function switchTab(tabName) {
+      ['today', 'weekly', 'settings'].forEach(t => {
+        document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== tabName);
+        const navBtn = document.getElementById(`nav-${t}`);
+        if (t === tabName) {
+          navBtn.classList.remove('text-notion-muted');
+          navBtn.classList.add('text-emerald-400');
+        } else {
+          navBtn.classList.remove('text-emerald-400');
+          navBtn.classList.add('text-notion-muted');
+        }
+      });
+      if (tabName === 'weekly') {
+        renderWeeklyReport();
+      }
+    }
+
+    // ==================== RENDERIZAÇÃO PRINCIPAL ====================
+    function renderAll() {
+      const dayData = getDayRecord(currentSelectedDate);
+      const dateObj = new Date(currentSelectedDate + 'T12:00:00');
+      const formatted = dateObj.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'short' });
+      document.getElementById('currentDateLabel').textContent = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+
+      // Somar macros do dia
+      let totP = 0, totC = 0, totF = 0, totKcal = 0;
+      dayData.meals.forEach(m => {
+        totP += Number(m.protein || 0);
+        totC += Number(m.carbs || 0);
+        totF += Number(m.fat || 0);
+        totKcal += Number(m.kcal || 0);
+      });
+
+      document.getElementById('dayProtVal').textContent = `${Math.round(totP)}g`;
+      document.getElementById('dayCarbVal').textContent = `${Math.round(totC)}g`;
+      document.getElementById('dayFatVal').textContent = `${Math.round(totF)}g`;
+      document.getElementById('dayKcalVal').textContent = Math.round(totKcal);
+
+      document.getElementById('dayProtBar').style.width = `${Math.min(100, (totP / TARGETS.proteinMin) * 100)}%`;
+      document.getElementById('dayCarbBar').style.width = `${Math.min(100, (totC / TARGETS.carbsMin) * 100)}%`;
+      document.getElementById('dayFatBar').style.width = `${Math.min(100, (totF / TARGETS.fatMin) * 100)}%`;
+
+      const kcalPct = Math.min(100, (totKcal / TARGETS.kcalMax) * 100);
+      const kcalBar = document.getElementById('dayKcalBar');
+      kcalBar.style.width = `${kcalPct}%`;
+      kcalBar.className = totKcal > TARGETS.kcalMax
+        ? 'bg-rose-500 h-full transition-all duration-300'
+        : 'bg-emerald-500 h-full transition-all duration-300';
+
+      // Creatina Status
+      const creatBadge = document.getElementById('creatineBadge');
+      if (dayData.creatineTaken) {
+        creatBadge.textContent = 'Creatina 6g: Concluída ✓';
+        creatBadge.className = 'text-[11px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+      } else {
+        creatBadge.textContent = 'Creatina 6g: Pendente';
+        creatBadge.className = 'text-[11px] px-2 py-0.5 rounded bg-purple-500/15 text-purple-300 border border-purple-500/30';
+      }
+
+      // Renderizar Garrafas de Água (6 x 500ml)
+      const bottlesGrid = document.getElementById('bottlesGrid');
+      bottlesGrid.innerHTML = '';
+      let filledCount = 0;
+      dayData.bottles.forEach((filled, idx) => {
+        if (filled) filledCount++;
+        const btn = document.createElement('button');
+        btn.className = `flex flex-col items-center justify-center py-2.5 px-1 rounded-xl border border-notion-border bg-[#161616] transition ${filled ? 'bottle-active' : 'text-notion-muted hover:text-white'}`;
+        btn.onclick = () => toggleWaterBottle(idx);
+        btn.innerHTML = `
+          <svg class="w-5 h-5 mb-1" fill="${filled ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 3h6v3l2 3v10a2 2 0 01-2 2H9a2 2 0 01-2-2V9l2-3V3z"/>
+          </svg>
+          <span class="text-[10px] font-bold">500ml</span>
+          <span class="text-[9px] opacity-75">#${idx + 1}</span>
+        `;
+        bottlesGrid.appendChild(btn);
+      });
+      document.getElementById('waterTotalLabel').textContent = `${(filledCount * 0.5).toFixed(1)} L`;
+
+      // Renderizar Lista de Refeições
+      const listEl = document.getElementById('todayMealsList');
+      document.getElementById('mealCountLabel').textContent = `${dayData.meals.length} registro(s)`;
+      if (dayData.meals.length === 0) {
+        listEl.innerHTML = `<div class="text-center py-6 text-xs text-notion-muted">Nenhuma refeição ou suplemento registrado neste dia.</div>`;
+      } else {
+        listEl.innerHTML = '';
+        dayData.meals.forEach((meal, index) => {
+          const itemDiv = document.createElement('div');
+          itemDiv.className = 'bg-[#161616] border border-notion-border rounded-xl p-3 flex items-start justify-between gap-2';
+          const microsHtml = (meal.micros || []).map(mc => `<span class="text-[9px] px-1.5 py-0.5 rounded bg-notion-card border border-notion-border text-notion-muted">${mc}</span>`).join('');
+          itemDiv.innerHTML = `
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-white">${meal.title}</span>
+                <span class="text-[10px] text-notion-muted">${meal.time || ''}</span>
+              </div>
+              <div class="flex gap-3 text-[11px] font-semibold">
+                <span class="text-rose-400">${Math.round(meal.protein)}g P</span>
+                <span class="text-amber-400">${Math.round(meal.carbs)}g C</span>
+                <span class="text-sky-400">${Math.round(meal.fat)}g G</span>
+                <span class="text-notion-muted">${Math.round(meal.kcal)} kcal</span>
+              </div>
+              ${meal.details ? `<p class="text-[11px] text-notion-muted">${meal.details}</p>` : ''}
+              ${microsHtml ? `<div class="flex flex-wrap gap-1 pt-1">${microsHtml}</div>` : ''}
+            </div>
+            <button onclick="deleteMeal(${index})" class="text-notion-muted hover:text-rose-400 p-1 text-sm" title="Remover">&times;</button>
+          `;
+          listEl.appendChild(itemDiv);
+        });
+      }
+    }
+
+    function toggleWaterBottle(idx) {
+      const dayData = getDayRecord(currentSelectedDate);
+      dayData.bottles[idx] = !dayData.bottles[idx];
+      saveDatabase();
+      renderAll();
+    }
+
+    function deleteMeal(idx) {
+      const dayData = getDayRecord(currentSelectedDate);
+      dayData.meals.splice(idx, 1);
+      saveDatabase();
+      renderAll();
+    }
+
+    function clearTodayData() {
+      if (!confirm('Deseja zerar os registros do dia selecionado?')) return;
+      delete db.days[currentSelectedDate];
+      saveDatabase();
+      renderAll();
+    }
+
+    // ==================== ATALHOS DE 1 TOQUE (WHEY + CREATINA) ====================
+    function quickAddPreset(type) {
+      const dayData = getDayRecord(currentSelectedDate);
+      const nowTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+      if (type === 'whey_manha') {
+        dayData.creatineTaken = true;
+        dayData.meals.push({
+          title: '☀️ Whey Manhã (1,5 scoop) + 6g Creatina',
+          time: nowTime,
+          protein: 37.5,
+          carbs: 3,
+          fat: 2,
+          kcal: 180,
+          details: '1,5 scoop Whey (37,5g P) + 6g Creatina Monohidratada',
+          micros: ['Complexo B', 'Cálcio']
+        });
+      } else if (type === 'whey_noite') {
+        dayData.meals.push({
+          title: '🌙 Whey Noite (1,5 scoop)',
+          time: nowTime,
+          protein: 37.5,
+          carbs: 3,
+          fat: 2,
+          kcal: 180,
+          details: '1,5 scoop Whey Protein (37,5g P)',
+          micros: ['Complexo B', 'Cálcio']
+        });
+      } else if (type === 'whey_1scoop') {
+        dayData.meals.push({
+          title: '🥤 Whey Protein (1 scoop)',
+          time: nowTime,
+          protein: 25,
+          carbs: 2,
+          fat: 1.5,
+          kcal: 120,
+          details: '1 scoop padrão (25g P)',
+          micros: ['Complexo B', 'Cálcio']
+        });
+      }
+      saveDatabase();
+      renderAll();
+    }
+
+    function openManualModal() {
+      openTextAiModal();
+    }
+
+    // ==================== VISÃO COMPUTACIONAL (GEMINI API) ====================
+    function handleImageUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const apiKey = localStorage.getItem(API_KEY_STORAGE);
+      if (!apiKey) {
+        alert('Configure primeiro sua Chave de API do Gemini na aba "Chave API & Alertas"!');
+        switchTab('settings');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          // Redimensionar imagem para envio ágil
+          const canvas = document.createElement('canvas');
+          const MAX_DIM = 1024;
+          let w = img.width;
+          let h = img.height;
+          if (w > h && w > MAX_DIM) {
+            h = Math.round((h * MAX_DIM) / w);
+            w = MAX_DIM;
+          } else if (h > MAX_DIM) {
+            w = Math.round((w * MAX_DIM) / h);
+            h = MAX_DIM;
+          }
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+          const base64Data = dataUrl.split(',')[1];
+
+          openInspectionModalWithImage(dataUrl);
+          callGeminiVision(base64Data);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+      event.target.value = '';
+    }
+
+    function openInspectionModalWithImage(dataUrl) {
+      document.getElementById('inspectionModal').classList.remove('hidden');
+      if (dataUrl) {
+        document.getElementById('modalImagePreview').src = dataUrl;
+        document.getElementById('modalImagePreviewBox').classList.remove('hidden');
+      } else {
+        document.getElementById('modalImagePreviewBox').classList.add('hidden');
+      }
+      document.getElementById('aiLoadingBox').classList.remove('hidden');
+      document.getElementById('aiResultsContent').classList.add('hidden');
+    }
+
+    function closeInspectionModal() {
+      document.getElementById('inspectionModal').classList.add('hidden');
+    }
+
+    async function callGeminiVision(base64Jpeg) {
+      const apiKey = localStorage.getItem(API_KEY_STORAGE);
+      const model = localStorage.getItem(MODEL_STORAGE) || 'gemini-2.5-flash';
+
+      const systemPrompt = `Você é um nutricionista esportivo de precisão calibrado para avaliar refeições universitárias brasileiras, especialmente a bandeja de aço inox subdividida do RU da UFU (Restaurante Universitário) ou pratos comuns.
+Analise a foto, identifique cada alimento presente e estime a massa em gramas (g) usando o tamanho dos compartimentos da bandeja ou prato como escala.
+Retorne EXCLUSIVAMENTE um JSON válido (sem markdown em volta) com a estrutura exata:
+{
+  "mealName": "Almoço / Jantar RU UFU",
+  "items": [
+    { "name": "Arroz branco cozido", "grams": 180, "protein": 4.5, "carbs": 50.4, "fat": 0.4, "kcal": 230 },
+    { "name": "Feijão carioca", "grams": 120, "protein": 5.8, "carbs": 16.3, "fat": 0.6, "kcal": 91 }
+  ],
+  "micros": ["Ferro", "Magnésio", "Complexo B", "Fibras"]
+}
+Para "micros", escolha apenas entre estas etiquetas quando estiverem presentes em quantidade relevante na refeição: ["Ferro", "Vitamina C", "Vitamina A", "Complexo B", "Cálcio", "Magnésio", "Zinco", "Potássio", "Fibras"].`;
+
+      try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                { text: systemPrompt },
+                { inline_data: { mime_type: 'image/jpeg', data: base64Jpeg } }
+              ]
+            }],
+            generationConfig: {
+              temperature: 0.2,
+              responseMimeType: 'application/json'
+            }
+          })
+        });
+
+        const data = await response.json();
+        if (data.error) throw new Error(data.error.message);
+
+        const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+        const cleaned = rawText.replace(/```json|```/g, '').trim();
+        const parsed = JSON.parse(cleaned);
+        setupInspectionForm(parsed);
+      } catch (err) {
+        alert('Erro ao analisar imagem na API: ' + err.message);
+        closeInspectionModal();
+      }
+    }
+
+    // ==================== ANÁLISE POR TEXTO (SEM FOTO) ====================
+    function openTextAiModal() {
+      document.getElementById('textAiPrompt').value = '';
+      document.getElementById('textAiModal').classList.remove('hidden');
+    }
+
+    function closeTextAiModal() {
+      document.getElementById('textAiModal').classList.add('hidden');
+    }
+
+    async function analyzeTextMealWithAi() {
+      const textDesc = document.getElementById('textAiPrompt').value.trim();
+      if (!textDesc) return;
+
+      const apiKey = localStorage.getItem(API_KEY_STORAGE);
+      if (!apiKey) {
+        alert('Configure primeiro sua Chave de API do Gemini na aba "Chave API & Alertas"!');
+        closeTextAiModal();
+        switchTab('settings');
+        return;
+      }
+
+      closeTextAiModal();
+      openInspectionModalWithImage(null);
+
+      const model = localStorage.getItem(MODEL_STORAGE) || 'gemini-2.5-flash';
+      const prompt = `Você é um nutricionista esportivo. O usuário descreveu a seguinte refeição: "${textDesc}".
+Estime a massa em gramas (g) de cada item, os macronutrientes e calorias.
+Retorne EXCLUSIVAMENTE um JSON válido com a estrutura:
+{
+  "mealName": "Refeição Descrita",
+  "items": [
+    { "name": "Nome do Alimento", "grams": 100, "protein": 10, "carbs": 20, "fat": 5, "kcal": 165 }
+  ],
+  "micros": ["Ferro", "Complexo B"]
+}
+Escolha "micros" apenas dentro desta lista: ["Ferro", "Vitamina C", "Vitamina A", "Complexo B", "Cálcio", "Magnésio", "Zinco", "Potássio", "Fibras"].`;
+
+      try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.2, responseMimeType: 'application/json' }
+          })
+        });
+        const data = await response.json();
+        if (data.error) throw new Error(data.error.message);
+        const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+        const parsed = JSON.parse(rawText.replace(/```json|```/g, '').trim());
+        setupInspectionForm(parsed);
+      } catch (err) {
+        alert('Erro na análise: ' + err.message);
+        closeInspectionModal();
+      }
+    }
+
+    // ==================== AUDITORIA INTERATIVA ANTES DE SALVAR ====================
+    function setupInspectionForm(parsed) {
+      document.getElementById('aiLoadingBox').classList.add('hidden');
+      document.getElementById('aiResultsContent').classList.remove('hidden');
+
+      currentInspectionData = {
+        mealName: parsed.mealName || 'Refeição Analisada',
+        items: (parsed.items || []).map(it => {
+          const g = Number(it.grams) || 100;
+          return {
+            name: it.name || 'Alimento',
+            grams: g,
+            baseGrams: g,
+            baseProtein: Number(it.protein) || 0,
+            baseCarbs: Number(it.carbs) || 0,
+            baseFat: Number(it.fat) || 0,
+            baseKcal: Number(it.kcal) || 0,
+            protein: Number(it.protein) || 0,
+            carbs: Number(it.carbs) || 0,
+            fat: Number(it.fat) || 0,
+            kcal: Number(it.kcal) || 0
+          };
+        }),
+        micros: Array.isArray(parsed.micros) ? parsed.micros : []
+      };
+
+      document.getElementById('inspectedMealTitle').value = currentInspectionData.mealName;
+      renderInspectionItems();
+    }
+
+    function renderInspectionItems() {
+      const container = document.getElementById('inspectedItemsList');
+      container.innerHTML = '';
+
+      let totP = 0, totC = 0, totF = 0, totKcal = 0;
+
+      currentInspectionData.items.forEach((item, idx) => {
+        totP += Number(item.protein);
+        totC += Number(item.carbs);
+        totF += Number(item.fat);
+        totKcal += Number(item.kcal);
+
+        const row = document.createElement('div');
+        row.className = 'bg-[#141414] border border-notion-border rounded-xl p-2.5 space-y-2';
+        row.innerHTML = `
+          <div class="flex items-center justify-between gap-2">
+            <input type="text" value="${item.name}" onchange="updateInspectedItemName(${idx}, this.value)" class="bg-transparent text-xs font-bold text-white border-b border-transparent focus:border-emerald-500 focus:outline-none flex-1" />
+            <div class="flex items-center gap-1">
+              <input type="number" value="${Math.round(item.grams)}" oninput="updateInspectedItemGrams(${idx}, this.value)" class="w-16 bg-notion-card border border-notion-border rounded px-2 py-1 text-xs text-right text-emerald-400 font-bold" />
+              <span class="text-[11px] text-notion-muted">g</span>
+              <button onclick="removeInspectedItem(${idx})" class="text-notion-muted hover:text-rose-400 pl-1.5">&times;</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-4 gap-1.5 text-[10px]">
+            <div class="bg-notion-card rounded px-2 py-1 text-rose-400 font-semibold">${Math.round(item.protein)}g P</div>
+            <div class="bg-notion-card rounded px-2 py-1 text-amber-400 font-semibold">${Math.round(item.carbs)}g C</div>
+            <div class="bg-notion-card rounded px-2 py-1 text-sky-400 font-semibold">${Math.round(item.fat)}g G</div>
+            <div class="bg-notion-card rounded px-2 py-1 text-notion-text font-semibold">${Math.round(item.kcal)} kcal</div>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+
+      document.getElementById('inspectedTotalProt').textContent = `${Math.round(totP)}g P`;
+      document.getElementById('inspectedTotalCarb').textContent = `${Math.round(totC)}g C`;
+      document.getElementById('inspectedTotalFat').textContent = `${Math.round(totF)}g G`;
+      document.getElementById('inspectedTotalKcal').textContent = `${Math.round(totKcal)} kcal`;
+
+      const microsBox = document.getElementById('inspectedMicrosBadges');
+      microsBox.innerHTML = (currentInspectionData.micros || []).map(m =>
+        `<span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">${m}</span>`
+      ).join('') || '<span class="text-[11px] text-notion-muted">Nenhum micronutriente específico marcado</span>';
+    }
+
+    function updateInspectedItemName(idx, val) {
+      currentInspectionData.items[idx].name = val;
+    }
+
+    function updateInspectedItemGrams(idx, newGramsVal) {
+      const item = currentInspectionData.items[idx];
+      const g = Math.max(0, Number(newGramsVal) || 0);
+      item.grams = g;
+      const ratio = item.baseGrams > 0 ? (g / item.baseGrams) : 1;
+      item.protein = item.baseProtein * ratio;
+      item.carbs = item.baseCarbs * ratio;
+      item.fat = item.baseFat * ratio;
+      item.kcal = item.baseKcal * ratio;
+      renderInspectionItems();
+    }
+
+    function removeInspectedItem(idx) {
+      currentInspectionData.items.splice(idx, 1);
+      renderInspectionItems();
+    }
+
+    function addBlankInspectedItem() {
+      currentInspectionData.items.push({
+        name: 'Item Extra',
+        grams: 100,
+        baseGrams: 100,
+        baseProtein: 10,
+        baseCarbs: 15,
+        baseFat: 3,
+        baseKcal: 130,
+        protein: 10,
+        carbs: 15,
+        fat: 3,
+        kcal: 130
+      });
+      renderInspectionItems();
+    }
+
+    function confirmInspectedMeal() {
+      if (!currentInspectionData) return;
+      const dayData = getDayRecord(currentSelectedDate);
+      const title = document.getElementById('inspectedMealTitle').value.trim() || 'Refeição';
+
+      let totP = 0, totC = 0, totF = 0, totKcal = 0;
+      const parts = [];
+      currentInspectionData.items.forEach(it => {
+        totP += Number(it.protein);
+        totC += Number(it.carbs);
+        totF += Number(it.fat);
+        totKcal += Number(it.kcal);
+        parts.push(`${it.name} (${Math.round(it.grams)}g)`);
+      });
+
+      const nowTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      dayData.meals.push({
+        title,
+        time: nowTime,
+        protein: Math.round(totP * 10) / 10,
+        carbs: Math.round(totC * 10) / 10,
+        fat: Math.round(totF * 10) / 10,
+        kcal: Math.round(totKcal),
+        details: parts.join(', '),
+        micros: currentInspectionData.micros || []
+      });
+
+      saveDatabase();
+      closeInspectionModal();
+      renderAll();
+    }
+
+    // ==================== RELATÓRIO SEMANAL & COMPRA INTELIGENTE ====================
+    function getLast7DaysDates() {
+      const dates = [];
+      const base = new Date(currentSelectedDate + 'T12:00:00');
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(base);
+        d.setDate(base.getDate() - i);
+        dates.push(d.toISOString().split('T')[0]);
+      }
+      return dates;
+    }
+
+    function renderWeeklyReport() {
+      const dates = getLast7DaysDates();
+      let sumP = 0, sumC = 0, sumF = 0, sumKcal = 0, sumWaterL = 0;
+      let loggedDaysCount = 0;
+      const microCounts = {};
+      ESSENTIAL_MICROS.forEach(m => microCounts[m.id] = 0);
+
+      const tbody = document.getElementById('weeklyTableBody');
+      tbody.innerHTML = '';
+
+      dates.forEach(dStr => {
+        const rec = db.days[dStr];
+        let dP = 0, dC = 0, dF = 0, dKcal = 0, dWater = 0;
+        if (rec) {
+          dWater = (rec.bottles || []).filter(Boolean).length * 0.5;
+          (rec.meals || []).forEach(m => {
+            dP += Number(m.protein || 0);
+            dC += Number(m.carbs || 0);
+            dF += Number(m.fat || 0);
+            dKcal += Number(m.kcal || 0);
+            (m.micros || []).forEach(mc => {
+              if (microCounts[mc] !== undefined) microCounts[mc]++;
+            });
+          });
+        }
+
+        const hasActivity = (rec && (rec.meals.length > 0 || dWater > 0));
+        if (hasActivity) {
+          loggedDaysCount++;
+          sumP += dP;
+          sumC += dC;
+          sumF += dF;
+          sumKcal += dKcal;
+          sumWaterL += dWater;
+        }
+
+        const shortDate = dStr.split('-').slice(1).reverse().join('/');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="py-2 font-medium text-white">${shortDate}</td>
+          <td class="py-2 ${dP >= TARGETS.proteinMin ? 'text-emerald-400 font-bold' : 'text-notion-muted'}">${Math.round(dP)}g</td>
+          <td class="py-2 ${dC >= TARGETS.carbsMin ? 'text-emerald-400 font-bold' : 'text-notion-muted'}">${Math.round(dC)}g</td>
+          <td class="py-2 ${dF >= TARGETS.fatMin ? 'text-emerald-400 font-bold' : 'text-notion-muted'}">${Math.round(dF)}g</td>
+          <td class="py-2 ${dKcal <= TARGETS.kcalMax && dKcal > 0 ? 'text-white' : 'text-rose-400'}">${Math.round(dKcal)}</td>
+          <td class="py-2 ${dWater >= 3 ? 'text-sky-400 font-bold' : 'text-notion-muted'}">${dWater.toFixed(1)}L</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      const divisor = Math.max(1, loggedDaysCount);
+      const avgP = sumP / divisor;
+      const avgC = sumC / divisor;
+      const avgF = sumF / divisor;
+      const avgKcal = sumKcal / divisor;
+
+      document.getElementById('activeDaysBadge').textContent = `${loggedDaysCount} dia(s) ativo(s)`;
+
+      const cards = [
+        { label: 'Proteína Média', val: `${Math.round(avgP)}g/dia`, target: `Mín ${TARGETS.proteinMin}g`, ok: avgP >= TARGETS.proteinMin },
+        { label: 'Carboidrato Médio', val: `${Math.round(avgC)}g/dia`, target: `Mín ${TARGETS.carbsMin}g`, ok: avgC >= TARGETS.carbsMin },
+        { label: 'Gordura Média', val: `${Math.round(avgF)}g/dia`, target: `Mín ${TARGETS.fatMin}g`, ok: avgF >= TARGETS.fatMin },
+        { label: 'Calorias Médias', val: `${Math.round(avgKcal)} kcal`, target: `Máx ${TARGETS.kcalMax}`, ok: avgKcal <= TARGETS.kcalMax && avgKcal > 0 }
+      ];
+
+      const avgGrid = document.getElementById('weeklyAveragesGrid');
+      avgGrid.innerHTML = cards.map(c => `
+        <div class="bg-[#161616] border ${c.ok ? 'border-emerald-500/30' : 'border-rose-500/30'} rounded-xl p-3">
+          <div class="flex justify-between items-center text-[10px]">
+            <span class="text-notion-muted">${c.label}</span>
+            <span class="${c.ok ? 'text-emerald-400' : 'text-rose-400'} font-bold">${c.ok ? 'META OK' : 'ATENÇÃO'}</span>
+          </div>
+          <div class="text-base font-extrabold text-white mt-1">${c.val}</div>
+          <div class="text-[10px] text-notion-muted mt-0.5">${c.target}</div>
+        </div>
+      `).join('');
+
+      // Renderizar Micronutrientes
+      const microGrid = document.getElementById('micronutrientsGrid');
+      const deficientMicros = [];
+      microGrid.innerHTML = ESSENTIAL_MICROS.map(m => {
+        const count = microCounts[m.id] || 0;
+        const statusOk = count >= 3;
+        if (!statusOk) deficientMicros.push(m);
+        return `
+          <div class="bg-[#161616] border ${statusOk ? 'border-emerald-500/20' : 'border-amber-500/30'} rounded-xl p-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold ${statusOk ? 'text-emerald-300' : 'text-amber-300'}">${m.label}</span>
+              <span class="text-[10px] text-notion-muted">${count}x</span>
+            </div>
+            <p class="text-[10px] text-notion-muted mt-1">${statusOk ? 'Bom aporte semanal' : 'Baixa frequência'}</p>
+          </div>
+        `;
+      }).join('');
+
+      // Gerar Lista de Compras Inteligente
+      const groceryEl = document.getElementById('smartGroceryList');
+      const recommendations = [];
+
+      if (avgP < TARGETS.proteinMin) {
+        recommendations.push(`<div class="p-2.5 rounded-xl bg-[#141414] border border-rose-500/30"><strong class="text-rose-400">Déficit de Proteína (${Math.round(avgP)}g/140g):</strong> Compre ovos, peito de frango, atum em lata ou iogurte proteico para lanches fora do horário do RU.</div>`);
+      }
+      if (avgC < TARGETS.carbsMin) {
+        recommendations.push(`<div class="p-2.5 rounded-xl bg-[#141414] border border-amber-500/30"><strong class="text-amber-400">Déficit de Carboidrato (${Math.round(avgC)}g/180g):</strong> Adicione aveia em flocos, banana, pão de forma ou tapioca pela manhã/noite.</div>`);
+      }
+      if (avgF < TARGETS.fatMin) {
+        recommendations.push(`<div class="p-2.5 rounded-xl bg-[#141414] border border-sky-500/30"><strong class="text-sky-400">Déficit de Gorduras Boas (${Math.round(avgF)}g/40g):</strong> Inclua pasta de amendoim, abacate, azeite de oliva ou ovos inteiros.</div>`);
+      }
+
+      deficientMicros.slice(0, 4).forEach(dm => {
+        recommendations.push(`
+          <div class="p-2.5 rounded-xl bg-[#141414] border border-notion-border flex items-start justify-between gap-2">
+            <div>
+              <span class="font-bold text-amber-300">Repor ${dm.label}:</span>
+              <span class="text-notion-text"> ${dm.foods}</span>
+            </div>
+          </div>
+        `);
+      });
+
+      groceryEl.innerHTML = recommendations.length > 0
+        ? recommendations.join('')
+        : `<div class="p-3 rounded-xl bg-emerald-950/30 border border-emerald-500/30 text-emerald-300">Parabéns! Todas as metas semanais de macronutrientes e vitaminas essenciais estão equilibradas.</div>`;
+    }
+
+    async function generateAiWeeklyAudit() {
+      const apiKey = localStorage.getItem(API_KEY_STORAGE);
+      if (!apiKey) {
+        alert('Salve sua chave de API do Gemini nas configurações primeiro.');
+        switchTab('settings');
+        return;
+      }
+      const btn = document.getElementById('btnAiAudit');
+      const box = document.getElementById('aiAuditResult');
+      btn.textContent = 'Analisando...';
+      box.classList.remove('hidden');
+      box.textContent = 'Consultando o Gemini sobre o seu histórico alimentar da semana...';
+
+      const dates = getLast7DaysDates();
+      const summary = dates.map(d => ({ date: d, data: db.days[d] || null })).filter(x => x.data);
+      const model = localStorage.getItem(MODEL_STORAGE) || 'gemini-2.5-flash';
+
+      const prompt = `Você é o nutricionista de um estudante de Engenharia Mecatrônica da UFU que treina musculação às 08:20 da manhã e faz 2 refeições principais no RU da UFU + Whey e Creatina.
+Metas semanais dele: Proteína >= 140g/dia, Carbo >= 180g/dia, Gordura >= 40g/dia, Calorias <= 2800 kcal/dia, Água = 3L/dia.
+Histórico registrado nos últimos dias: ${JSON.stringify(summary)}.
+Faça um diagnóstico direto e enxuto (máximo 120 palavras) apontando:
+1) O que faltou de vitaminas/minerais ou macros;
+2) Uma lista prática de 5 itens baratos e rápidos de mercado para ele deixar em casa/república.`;
+
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        });
+        const data = await res.json();
+        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta.';
+        box.innerHTML = reply.replace(/\n/g, '<br>');
+      } catch (e) {
+        box.textContent = 'Erro ao gerar auditoria: ' + e.message;
+      } finally {
+        btn.textContent = 'Auditoria IA';
+      }
+    }
+
+    // ==================== RADAR DE HORÁRIOS E NOTIFICAÇÕES ====================
+    function updateScheduleBanner() {
+      const now = new Date();
+      const day = now.getDay(); // 0=Dom, 1=Seg, ..., 6=Sab
+      const mins = now.getHours() * 60 + now.getMinutes();
+
+      const isWeekend = (day === 0 || day === 6);
+      const lunchStart = isWeekend ? (13 * 60) : (12 * 60 + 50);
+      const lunchLabel = isWeekend ? '13:00 (Almoço Fim de Semana)' : '12:50 – 13:05 (Almoço RU UFU)';
+
+      let dinnerStart = 18 * 60 + 20;
+      let dinnerLabel = '18:20 – 18:40 (Janta RU Ter–Sex)';
+      if (day === 1) {
+        dinnerStart = 19 * 60 + 5;
+        dinnerLabel = '19:05 – 19:20 (Janta RU Segunda)';
+      } else if (isWeekend) {
+        dinnerStart = 22 * 60;
+        dinnerLabel = '22:00 (Janta Fim de Semana)';
+      }
+
+      let nextTitle = '';
+      let slotKey = '';
+
+      if (mins < 8 * 60 + 15) {
+        nextTitle = '08:05 • Tomar 1,5 scoop Whey + 6g Creatina';
+        slotKey = 'whey_0805';
+      } else if (mins < lunchStart + 25) {
+        nextTitle = `${lunchLabel} • Tirar foto da bandeja`;
+        slotKey = 'lunch';
+      } else if (mins < dinnerStart + 30) {
+        nextTitle = `${dinnerLabel} • Tirar foto da bandeja`;
+        slotKey = 'dinner';
+      } else {
+        nextTitle = '23:45 • Check-in Noturno + 1,5 scoop Whey Final';
+        slotKey = 'night_2345';
+      }
+
+      document.getElementById('nextAlarmText').textContent = nextTitle;
+
+      // Disparo de Notificação do Navegador nos horários exatos
+      const exactTriggers = [
+        { time: 8 * 60 + 5, id: '0805', msg: 'Hora da 1ª porção de Whey (1,5 scoop) + 6g de Creatina!' },
+        { time: lunchStart, id: 'lunch', msg: 'Hora do Almoço! Lembre-se de tirar a foto da bandeja do RU.' },
+        { time: dinnerStart, id: 'dinner', msg: 'Hora da Janta! Tire a foto do prato/bandeja para calcular os macros.' },
+        { time: 23 * 60 + 45, id: '2345', msg: 'Check-in 23:45: Tomou o Whey da noite? Registre se comeu algo extra hoje!' }
+      ];
+
+      exactTriggers.forEach(trig => {
+        if (Math.abs(mins - trig.time) <= 1 && lastNotifiedSlot !== `${ getTodayISO() }_${ trig.id }`) {
+          lastNotifiedSlot = `${ getTodayISO() }_${ trig.id }`;
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('NutriUFU • Lembrete', { body: trig.msg });
+          }
+        }
+      });
+    }
+
+    function enableNotifications() {
+      if (!('Notification' in window)) {
+        alert('Este navegador não suporta notificações diretas.');
+        return;
+      }
+      Notification.requestPermission().then(perm => {
+        const btn = document.getElementById('notifBtn');
+        if (perm === 'granted') {
+          btn.textContent = 'Alertas Ativos ✓';
+          btn.className = 'text-xs px-2.5 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 shrink-0';
+          new Notification('NutriUFU Ativado!', { body: 'Você receberá alertas às 08:05, Almoço, Janta e 23:45.' });
+        }
+      });
+    }
+
+    // ==================== CONFIGURAÇÕES DA API KEY ====================
+    function saveApiSettings() {
+      const key = document.getElementById('apiKeyInput').value.trim();
+      const model = document.getElementById('geminiModelSelect').value;
+      localStorage.setItem(API_KEY_STORAGE, key);
+      localStorage.setItem(MODEL_STORAGE, model);
+      const msg = document.getElementById('apiStatusMsg');
+      msg.textContent = '✓ Chave e modelo salvos com sucesso no seu aparelho!';
+      msg.className = 'text-xs text-emerald-400 font-semibold';
+    }
+
+    async function testGeminiConnection() {
+      saveApiSettings();
+      const key = localStorage.getItem(API_KEY_STORAGE);
+      const model = localStorage.getItem(MODEL_STORAGE) || 'gemini-2.5-flash';
+      const msg = document.getElementById('apiStatusMsg');
+      if (!key) {
+        msg.textContent = 'Insira uma chave AIza... válida primeiro.';
+        msg.className = 'text-xs text-rose-400';
+        return;
+      }
+      msg.textContent = 'Testando conexão com o Gemini...';
+      msg.className = 'text-xs text-amber-400';
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: 'Responda apenas OK' }] }] })
+        });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error.message);
+        msg.textContent = `✓ Conexão funcionando perfeitamente com ${model}!`;
+        msg.className = 'text-xs text-emerald-400 font-semibold';
+      } catch (e) {
+        msg.textContent = 'Erro na chave ou modelo: ' + e.message;
+        msg.className = 'text-xs text-rose-400';
+      }
+    }
+
+    function exportDataJson() {
+      const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `backup-nutri-ufu-${getTodayISO()}.json`;
+      a.click();
+    }
+  </script>
+</body>
+</html>
