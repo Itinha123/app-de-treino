@@ -3,10 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#191919" />
+  <meta name="theme-color" content="#121212" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Acadêmico UFU • Mecatrônica & Radar IA</title>
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="apple-touch-icon" href="./icon-192.png" />
+  <title>UFU Hub • Discover, Rotina & Estudos</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -14,13 +17,14 @@
       theme: {
         extend: {
           colors: {
-            notion: {
-              bg: '#191919',
-              card: '#202020',
-              hover: '#2a2a2a',
-              border: '#2f2f2f',
-              text: '#ebebeb',
-              muted: '#9b9b9b'
+            gdark: {
+              bg: '#121212',
+              surface: '#1e1f22',
+              card: '#1b1b1f',
+              pill: '#28292e',
+              border: '#2e3036',
+              text: '#e3e3e3',
+              muted: '#9aa0a6'
             }
           }
         }
@@ -30,940 +34,1280 @@
   <style>
     * { -webkit-tap-highlight-color: transparent; }
     body {
-      background-color: #191919;
-      color: #ebebeb;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #121212;
+      color: #e3e3e3;
+      font-family: -apple-system, BlinkMacSystemFont, "Google Sans", "Segoe UI", Roboto, sans-serif;
     }
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: #191919; }
-    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
 <body class="min-h-screen flex flex-col pb-24">
 
-  <!-- HEADER FIXO -->
-  <header class="sticky top-0 z-30 bg-[#191919]/95 backdrop-blur border-b border-notion-border px-4 py-3">
-    <div class="max-w-3xl mx-auto flex items-center justify-between">
-      <div class="flex items-center gap-2.5">
-        <span class="w-2.5 h-2.5 rounded-full bg-indigo-400 animate-pulse"></span>
-        <div>
-          <h1 class="text-sm sm:text-base font-bold tracking-tight text-white">Central Mecatrônica UFU • 2026/2</h1>
-          <p id="headerDayInfo" class="text-[11px] text-notion-muted"></p>
+  <!-- BANNER DE INSTALAÇÃO DO APP (APARECE AUTOMATICAMENTE SE DISPONÍVEL) -->
+  <div id="installAppBanner" class="hidden bg-indigo-600 text-white px-4 py-2.5 text-sm font-medium flex items-center justify-between">
+    <span>📲 Instale o aplicativo em tela cheia no celular</span>
+    <button onclick="triggerPwaInstall()" class="px-3 py-1 rounded-lg bg-white text-indigo-700 font-bold text-xs">Instalar App</button>
+  </div>
+
+  <!-- =========================================================================== -->
+  <!-- VISÃO 1: PÁGINA PRINCIPAL (ESTILO GOOGLE DISCOVER + CHAT + CARROSSEL)       -->
+  <!-- =========================================================================== -->
+  <main id="view-discover" class="flex-1 max-w-xl w-full mx-auto px-4 pt-4 space-y-4">
+
+    <!-- BARRA SUPERIOR ESTILO GOOGLE (CHAT GERAL IA + ENGRENAGEM) -->
+    <div class="flex items-center gap-3">
+      <div onclick="toggleQuickTopChat()" class="flex-1 bg-gdark-pill border border-gdark-border rounded-full px-4 py-3 flex items-center justify-between cursor-pointer shadow-md hover:border-neutral-600 transition">
+        <div class="flex items-center gap-3">
+          <span class="text-lg font-extrabold bg-gradient-to-r from-blue-400 via-red-400 to-yellow-400 bg-clip-text text-transparent">G</span>
+          <span class="text-sm text-gdark-muted">Perguntar à IA ou ver avisos do dia...</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span id="unreadNotifDot" class="w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse"></span>
+          <span class="text-base">💬</span>
         </div>
       </div>
-      <div class="flex items-center gap-2">
-        <span id="semesterBadge" class="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/30 text-indigo-300"></span>
-        <button onclick="openSettingsModal()" class="p-2 rounded-lg bg-notion-card border border-notion-border hover:bg-notion-hover text-notion-muted hover:text-white" title="Chave API & Calendário">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-          </svg>
-        </button>
+
+      <!-- BOTÃO DE ENGRENAGEM (CONFIGURAÇÕES GERAIS + SALVOS + NOTIFICAÇÕES) -->
+      <button onclick="openGlobalSettings('config')" class="w-12 h-12 rounded-full bg-gdark-pill border-2 border-blue-500/60 flex items-center justify-center text-lg shadow-md hover:bg-neutral-800 transition shrink-0" title="Configurações e Notícias Salvas">
+        ⚙️
+      </button>
+    </div>
+
+    <!-- GAVETA EXPANSÍVEL DO CHAT PRINCIPAL & CENTRAL DE AVISOS (NO TOPO) -->
+    <div id="quickTopChatDrawer" class="hidden bg-gdark-surface border border-gdark-border rounded-3xl p-4 space-y-3 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-bold text-white">Assistente Geral & Avisos Ativos</span>
+          <button onclick="showHelpTooltip('Aqui você conversa sobre qualquer assunto, recebe lembretes de treino, água, refeições e estudos, e pode dispará-los para seu WhatsApp ou SMS.')" class="w-5 h-5 rounded-full bg-gdark-pill text-xs text-gdark-muted font-bold">?</button>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="openGlobalSettings('notifications')" class="text-xs text-blue-400 font-semibold">Editar Avisos</button>
+          <button onclick="toggleQuickTopChat()" class="text-gdark-muted text-lg leading-none">&times;</button>
+        </div>
+      </div>
+
+      <!-- MENSAGENS AUTOMÁTICAS DE ROTINA + CHAT -->
+      <div id="topChatHistory" class="max-h-60 overflow-y-auto space-y-2.5 text-sm pr-1"></div>
+
+      <!-- ENVIAR MENSAGEM RÁPIDA -->
+      <div class="flex gap-2 pt-1">
+        <input type="text" id="topChatInput" onkeydown="if(event.key==='Enter') sendTopChatMessage()" placeholder="Pergunte qualquer coisa à IA..." class="flex-1 bg-gdark-bg border border-gdark-border rounded-2xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500" />
+        <button onclick="sendTopChatMessage()" id="btnTopChatSend" class="px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm">Enviar</button>
       </div>
     </div>
-  </header>
 
-  <!-- CONTEÚDO PRINCIPAL -->
-  <main class="flex-1 max-w-3xl w-full mx-auto px-4 pt-4">
+    <!-- CARROSSEL HORIZONTAL DE QUADROS RÁPIDOS (ESTILO WIDGETS DO GOOGLE) -->
+    <div class="flex gap-2.5 overflow-x-auto no-scrollbar py-1" id="googleQuickCardsRow"></div>
 
-    <!-- ========================================================================= -->
-    <!-- SUBPÁGINA 1: RADAR MATINAL & FEED DE NOTÍCIAS (DESTAQUE PRINCIPAL)       -->
-    <!-- ========================================================================= -->
-    <section id="page-morning" class="space-y-5">
-
-      <!-- HUB DO RITUAL MATINAL (LINKS PARA OS OUTROS APPS) -->
-      <div class="bg-notion-card border border-notion-border rounded-2xl p-3.5">
-        <div class="flex items-center justify-between mb-2.5">
-          <span class="text-[10px] font-bold uppercase tracking-wider text-notion-muted">Ecossistema Diário • Check-in Rápido</span>
-          <span id="freeTimePill" class="text-[11px] font-bold text-emerald-400"></span>
-        </div>
-        <div class="grid grid-cols-3 gap-2">
-          <a href="index.html" class="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-[#161616] border border-notion-border hover:border-indigo-500/40 text-xs font-semibold text-white transition">
-            <span>🏋️‍♂️</span> <span>Treino</span>
-          </a>
-          <a href="dieta.html" class="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-[#161616] border border-notion-border hover:border-emerald-500/40 text-xs font-semibold text-white transition">
-            <span>🥗</span> <span>Dieta & Água</span>
-          </a>
-          <a href="financas.html" class="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-[#161616] border border-notion-border hover:border-amber-500/40 text-xs font-semibold text-white transition">
-            <span>💰</span> <span>Finanças</span>
-          </a>
-        </div>
+    <!-- FILTRO DE CATEGORIAS LIMPO COM ÍCONES (LIVRO, ROBÔ, GLOBO) -->
+    <div class="flex items-center justify-between gap-2 pt-1">
+      <div class="flex gap-2 overflow-x-auto no-scrollbar">
+        <button onclick="setFeedCategory('all')" id="catBtn-all" class="px-3.5 py-2 rounded-full text-sm font-semibold bg-gdark-pill border border-blue-500/50 text-white shrink-0">
+          ✨ Todas
+        </button>
+        <button onclick="setFeedCategory('ufu')" id="catBtn-ufu" class="px-3.5 py-2 rounded-full text-sm font-medium bg-gdark-surface border border-gdark-border text-gdark-text shrink-0">
+          📖 UFU
+        </button>
+        <button onclick="setFeedCategory('tech')" id="catBtn-tech" class="px-3.5 py-2 rounded-full text-sm font-medium bg-gdark-surface border border-gdark-border text-gdark-text shrink-0">
+          🤖 Tecnologia
+        </button>
+        <button onclick="setFeedCategory('politics')" id="catBtn-politics" class="px-3.5 py-2 rounded-full text-sm font-medium bg-gdark-surface border border-gdark-border text-gdark-text shrink-0">
+          🌐 Política
+        </button>
       </div>
+      <button onclick="refreshLiveDiscoverFeed()" id="btnRefreshDiscover" class="p-2 rounded-full bg-gdark-surface border border-gdark-border text-sm shrink-0" title="Atualizar Feed">
+        🔄
+      </button>
+    </div>
 
-      <!-- RESUMO DAS JANELAS DE ESTUDO & AULAS DO DIA (OUTLOOK) -->
-      <div class="bg-notion-card border border-notion-border rounded-2xl p-4 space-y-3">
+    <!-- LISTA DE CARDS DE NOTÍCIAS IDÊNTICA AO GOOGLE DISCOVER (COM IMAGEM GRANDE, ❤️ E COMPARTILHAR) -->
+    <div id="discoverFeedList" class="space-y-5 pt-1"></div>
+
+  </main>
+
+  <!-- =========================================================================== -->
+  <!-- VISÃO 2: PÁGINA "ROTINA" (4 QUADROS NO TOPO + AGENDA & JANELAS EDITÁVEIS)   -->
+  <!-- =========================================================================== -->
+  <main id="view-routine" class="hidden flex-1 max-w-xl w-full mx-auto px-4 pt-4 space-y-5">
+
+    <div class="flex items-center justify-between">
+      <button onclick="navigateMainView('discover')" class="inline-flex items-center gap-1.5 text-sm font-semibold text-gdark-muted hover:text-white">
+        <span>&larr;</span> <span>Início</span>
+      </button>
+      <div class="flex items-center gap-2">
+        <span class="text-base font-bold text-white">Central de Rotina</span>
+        <button onclick="showHelpTooltip('Toque em qualquer um dos 4 pilares acima para abrir o módulo correspondente, ou clique na engrenagem abaixo para editar seus horários de aula e janelas livres do semestre.')" class="w-5 h-5 rounded-full bg-gdark-pill text-xs text-gdark-muted font-bold">?</button>
+      </div>
+    </div>
+
+    <!-- OS 4 QUADROS PRINCIPAIS NO TOPO (ESTUDOS, TREINO, DIETA, FINANÇAS) -->
+    <div class="grid grid-cols-2 gap-3">
+      <button onclick="navigateMainView('studies')" class="bg-gdark-surface border border-gdark-border hover:border-indigo-500/60 rounded-3xl p-4 text-left transition flex flex-col justify-between h-28 shadow-md">
         <div class="flex items-center justify-between">
-          <div>
-            <h2 class="text-sm font-bold text-white">Sua Agenda & Janelas Livres de Hoje</h2>
-            <p class="text-[11px] text-notion-muted">Sincronizado com sua grade horária do Outlook</p>
-          </div>
-          <button onclick="switchPage('ai')" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition">
-            Ir para Missão do Dia &rarr;
+          <span class="text-2xl">📚</span>
+          <span id="routineCardPendingBadge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300"></span>
+        </div>
+        <div>
+          <div class="text-base font-bold text-white">Estudos</div>
+          <div class="text-xs text-gdark-muted">Missão & 8 Matérias</div>
+        </div>
+      </button>
+
+      <a href="index.html" class="bg-gdark-surface border border-gdark-border hover:border-emerald-500/60 rounded-3xl p-4 text-left transition flex flex-col justify-between h-28 shadow-md">
+        <div class="flex items-center justify-between">
+          <span class="text-2xl">🏋️‍♂️</span>
+          <span class="text-xs font-semibold text-gdark-muted">06:30</span>
+        </div>
+        <div>
+          <div class="text-base font-bold text-white">Treino</div>
+          <div class="text-xs text-gdark-muted">Planilha & Cargas</div>
+        </div>
+      </a>
+
+      <a href="dieta.html" class="bg-gdark-surface border border-gdark-border hover:border-amber-500/60 rounded-3xl p-4 text-left transition flex flex-col justify-between h-28 shadow-md">
+        <div class="flex items-center justify-between">
+          <span class="text-2xl">🥗</span>
+          <span class="text-xs font-semibold text-gdark-muted">140g Prot • 3L</span>
+        </div>
+        <div>
+          <div class="text-base font-bold text-white">Dieta</div>
+          <div class="text-xs text-gdark-muted">Refeições & Água</div>
+        </div>
+      </a>
+
+      <a href="financas.html" class="bg-gdark-surface border border-gdark-border hover:border-sky-500/60 rounded-3xl p-4 text-left transition flex flex-col justify-between h-28 shadow-md">
+        <div class="flex items-center justify-between">
+          <span class="text-2xl">💰</span>
+          <span class="text-xs font-semibold text-gdark-muted">3 Bolsos</span>
+        </div>
+        <div>
+          <div class="text-base font-bold text-white">Finanças</div>
+          <div class="text-xs text-gdark-muted">Pix, Contas & Economia</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- SUA AGENDA E JANELAS LIVRES DE HOJE (COM ENGRENAGEM DE EDIÇÃO COMPLETA) -->
+    <div class="bg-gdark-surface border border-gdark-border rounded-3xl p-4 space-y-4 shadow-md">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <h2 class="text-base font-bold text-white">Sua Agenda e Janelas Livres</h2>
+          <button onclick="showHelpTooltip('Mostra a linha do tempo completa do seu dia (treino, aulas da UFU, refeições no RU e janelas livres). Toque na engrenagem ao lado para mudar qualquer aula ou horário de janela livre.')" class="w-5 h-5 rounded-full bg-gdark-pill text-xs text-gdark-muted font-bold">?</button>
+        </div>
+        <div class="flex items-center gap-2">
+          <select id="routineDaySelector" onchange="renderRoutineSchedule()" class="bg-gdark-pill border border-gdark-border rounded-xl px-2.5 py-1.5 text-xs font-bold text-white"></select>
+          <button onclick="openScheduleEditorModal()" class="w-9 h-9 rounded-full bg-gdark-pill border border-gdark-border flex items-center justify-center text-sm hover:bg-neutral-700" title="Editar Aulas e Janelas Livres">
+            ⚙️
           </button>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-          <div class="bg-[#161616] border border-notion-border rounded-xl p-3">
-            <span class="text-[10px] font-bold uppercase text-indigo-400 tracking-wider">Aulas de Hoje (Outlook)</span>
-            <div id="todayClassesList" class="mt-1.5 space-y-1 text-xs text-notion-text"></div>
-          </div>
-          <div class="bg-[#161616] border border-emerald-500/20 rounded-xl p-3">
-            <span class="text-[10px] font-bold uppercase text-emerald-400 tracking-wider">Janelas Livres para Foco</span>
-            <div id="todayFreeWindowsList" class="mt-1.5 space-y-1 text-xs text-notion-text"></div>
-          </div>
-        </div>
       </div>
 
-      <!-- FEED DE INFORMAÇÕES FILTRADO (DESTAQUE MATINAL) -->
-      <div class="bg-notion-card border border-notion-border rounded-2xl p-4 space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300">Briefing Matinal Sem Ruído</span>
-            </div>
-            <h2 class="text-base font-bold text-white mt-1">Feed de Informações Prioritárias</h2>
-            <p class="text-xs text-notion-muted">1º UFU & Engenharias • 2º Mecatrônica, IA & Tech • 3º Política Brasil/Mundo</p>
-          </div>
-          <div class="flex gap-2">
-            <button onclick="fetchLiveFeeds()" id="btnRefreshFeed" class="px-3 py-1.5 rounded-xl bg-notion-hover border border-notion-border hover:border-indigo-500/40 text-xs font-semibold text-white transition">
-              🔄 Atualizar Notícias
-            </button>
-            <button onclick="summarizeFeedWithAi()" id="btnAiBriefing" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white transition">
-              ✨ Resumo IA
-            </button>
-          </div>
-        </div>
-
-        <!-- RESUMO EXECUTIVO GERADO POR IA (SE SOLICITADO) -->
-        <div id="aiMorningBriefingBox" class="hidden bg-indigo-950/30 border border-indigo-500/30 rounded-xl p-3.5 text-xs text-notion-text space-y-2 leading-relaxed"></div>
-
-        <!-- FILTRO DE CATEGORIAS DO FEED -->
-        <div class="flex gap-2 overflow-x-auto pb-1">
-          <button onclick="filterNewsCategory('all')" id="feedTab-all" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white shrink-0">Todas (Prioridade)</button>
-          <button onclick="filterNewsCategory('ufu')" id="feedTab-ufu" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#161616] border border-notion-border text-rose-300 shrink-0">🔴 1. UFU & Engenharias</button>
-          <button onclick="filterNewsCategory('tech')" id="feedTab-tech" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#161616] border border-notion-border text-amber-300 shrink-0">🟡 2. Mecatrônica, IA & Tech</button>
-          <button onclick="filterNewsCategory('politics')" id="feedTab-politics" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#161616] border border-notion-border text-sky-300 shrink-0">🔵 3. Política BR & Mundo</button>
-        </div>
-
-        <!-- LISTA DE NOTÍCIAS -->
-        <div id="newsFeedContainer" class="space-y-2.5"></div>
+      <!-- JANELAS LIVRES EM DESTAQUE -->
+      <div class="space-y-2">
+        <div class="text-xs font-bold uppercase tracking-wider text-emerald-400">⏳ Janelas Livres de Estudo</div>
+        <div id="routineFreeWindowsBox" class="space-y-2"></div>
       </div>
 
-    </section>
+      <!-- GRADE DO DIA ESTILO APP DA UFU (AULAS + ROTINA FIXA) -->
+      <div class="space-y-2 pt-1">
+        <div class="text-xs font-bold uppercase tracking-wider text-blue-400">🎓 Grade de Aulas & Rotina do Dia</div>
+        <div id="routineClassesTimeline" class="space-y-2"></div>
+      </div>
+    </div>
 
-    <!-- ========================================================================= -->
-    <!-- SUBPÁGINA 2: COMANDO IA, MISSÃO ÚNICA (1 POR VEZ) & CHAT DE ALINHAMENTO   -->
-    <!-- ========================================================================= -->
-    <section id="page-ai" class="hidden space-y-5">
+  </main>
 
-      <!-- MÓDULO DE FOCO ÚNICO: 1 TAREFA POR VEZ -->
-      <div class="bg-gradient-to-br from-indigo-950/50 via-notion-card to-notion-card border-2 border-indigo-500/50 rounded-2xl p-4 sm:p-5 space-y-4 shadow-lg">
+  <!-- =========================================================================== -->
+  <!-- VISÃO 3: PÁGINA "ESTUDOS" (FOCO, SEMANA E AS 8 MATÉRIAS)                    -->
+  <!-- =========================================================================== -->
+  <main id="view-studies" class="hidden flex-1 max-w-xl w-full mx-auto px-4 pt-4 space-y-5">
+
+    <!-- TOPO DE NAVEGAÇÃO INTERNA DE ESTUDOS -->
+    <div class="flex items-center justify-between">
+      <button onclick="navigateMainView('routine')" class="inline-flex items-center gap-1.5 text-sm font-semibold text-gdark-muted hover:text-white">
+        <span>&larr;</span> <span>Rotina</span>
+      </button>
+      <div class="flex bg-gdark-surface border border-gdark-border rounded-2xl p-1 gap-1">
+        <button onclick="switchStudyTab('focus')" id="studyTabBtn-focus" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white">🎯 Foco & IA</button>
+        <button onclick="switchStudyTab('weekly')" id="studyTabBtn-weekly" class="px-3 py-1.5 rounded-xl text-xs font-bold text-gdark-muted">📋 Semana</button>
+        <button onclick="switchStudyTab('subjects')" id="studyTabBtn-subjects" class="px-3 py-1.5 rounded-xl text-xs font-bold text-gdark-muted">📚 Matérias (8)</button>
+      </div>
+    </div>
+
+    <!-- SUB-ABA 3A: MODO DE EXECUÇÃO ÚNICA (MAIS LARGO, COM ☰ E ?) + ASSISTENTE DE ESTUDOS UNIFICADO -->
+    <div id="studySub-focus" class="space-y-5">
+
+      <!-- QUADRO LARGO: MODO DE EXECUÇÃO ÚNICA -->
+      <div class="bg-gdark-surface border border-indigo-500/40 rounded-3xl p-5 space-y-4 shadow-lg w-full">
         <div class="flex items-center justify-between">
-          <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-            🎯 Modo Execução Única • 1 Atividade por Vez
-          </span>
-          <span id="activeTaskWindowTag" class="text-xs font-semibold text-emerald-400"></span>
-        </div>
+          <div class="flex items-center gap-2">
+            <span id="studyModeBadgeTitle" class="text-xs font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300">
+              🎯 Modo de Execução Única
+            </span>
+            <button onclick="showHelpTooltip('Foque em apenas 1 atividade por vez. O sistema escolhe a tarefa mais urgente da fila (Prioridade -> Prazo -> Status -> Importância). Quando terminar, marque como concluída para liberar a próxima.')" class="w-5 h-5 rounded-full bg-gdark-pill text-xs text-gdark-muted font-bold">?</button>
+          </div>
 
-        <div id="singleTaskSpotlight" class="space-y-3"></div>
-
-        <!-- TIMER POMODORO / BLOCO DE EXECUÇÃO EMBUTIDO -->
-        <div class="bg-[#141414] border border-notion-border rounded-xl p-3 flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div id="timerDisplay" class="text-xl font-mono font-extrabold text-white">50:00</div>
-            <div class="text-[11px] text-notion-muted">
-              <div>Cronômetro da Tarefa</div>
-              <div id="timerStatusText">Pronto para iniciar bloco</div>
+          <!-- MENU DE TRÊS PAUZINHOS (☰) PARA ESCOLHER O MODO DE ESTUDO / RECUPERAÇÃO FDS -->
+          <div class="relative">
+            <button onclick="toggleStudyModeMenu()" class="w-9 h-9 rounded-xl bg-gdark-pill border border-gdark-border flex items-center justify-center text-base text-white hover:bg-neutral-700" title="Selecionar Modo de Estudos">
+              ☰
+            </button>
+            <div id="studyModeDropdown" class="hidden absolute right-0 mt-2 w-60 bg-gdark-card border border-gdark-border rounded-2xl shadow-2xl p-2 z-30 space-y-1 text-xs">
+              <div class="px-2.5 py-1 text-[10px] font-bold uppercase text-gdark-muted">Modo de Execução</div>
+              <button onclick="setStudyExecutionMode('single')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-gdark-pill text-white font-semibold flex items-center justify-between">
+                <span>🎯 1 Tarefa por Vez (Padrão)</span>
+              </button>
+              <button onclick="setStudyExecutionMode('exam')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-gdark-pill text-white font-semibold flex items-center justify-between">
+                <span>🔥 Modo Véspera de Prova</span>
+              </button>
+              <button onclick="setStudyExecutionMode('recovery')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-gdark-pill text-amber-300 font-semibold flex items-center justify-between">
+                <span>⚠️ Modo Recuperação (Fim de Semana)</span>
+              </button>
+              <hr class="border-gdark-border my-1" />
+              <button onclick="openTaskModal('')" class="w-full text-left px-3 py-2 rounded-xl hover:bg-gdark-pill text-indigo-300 font-bold">
+                + Criar Tarefa Manualmente
+              </button>
             </div>
           </div>
+        </div>
+
+        <!-- CARTÃO DA TAREFA ATUAL (FONTE MAIOR E LIMPA) -->
+        <div id="spotlightTaskContainer"></div>
+
+        <!-- CRONÔMETRO DE FOCO EMBUTIDO -->
+        <div class="bg-gdark-bg border border-gdark-border rounded-2xl p-3.5 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="text-xl">⏱️</span>
+            <div id="focusTimerDisplay" class="text-2xl font-mono font-extrabold text-white">50:00</div>
+          </div>
           <div class="flex gap-2">
-            <button onclick="toggleFocusTimer()" id="btnTimerToggle" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition">
-              ▶ Iniciar Foco
+            <button onclick="toggleStudyTimer()" id="btnStudyTimer" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm">
+              ▶ Iniciar
             </button>
-            <button onclick="resetFocusTimer()" class="px-2.5 py-2 rounded-xl bg-notion-hover border border-notion-border text-notion-muted hover:text-white text-xs">
+            <button onclick="resetStudyTimer()" class="px-3 py-2 rounded-xl bg-gdark-pill text-gdark-muted hover:text-white text-sm">
               ↺
             </button>
           </div>
         </div>
       </div>
 
-      <!-- CENTRAL DE INGESTÃO RÁPIDA (TEAMS, MOODLE, E-MAIL, NOTAS) -->
-      <div class="bg-notion-card border border-notion-border rounded-2xl p-4 space-y-3">
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="text-sm font-bold text-white">📥 Colar Avisos (Teams, Moodle, E-mail ou Aulas)</h3>
-            <p class="text-[11px] text-notion-muted">Cole mensagens de professores ou comunicados — a IA atualiza suas matérias e recalcula sua tarefa atual</p>
+      <!-- ASSISTENTE DE ESTUDOS (CHAT E COLAGEM DE AVISOS INTEGRADOS E MINIMALISTA) -->
+      <div class="bg-gdark-surface border border-gdark-border rounded-3xl p-4 flex flex-col h-[430px] shadow-md">
+        <div class="flex items-center justify-between pb-3 border-b border-gdark-border">
+          <div class="flex items-center gap-2">
+            <span class="text-base">🤖</span>
+            <h3 class="text-base font-bold text-white">Assistente de Estudos</h3>
+            <button onclick="showHelpTooltip('Cole aqui avisos de professores (Teams/Moodle), fale quais tarefas você já concluiu, informe datas de provas ou avise sobre imprevistos no seu dia. A IA atualiza suas matérias e recalcula sua tarefa atual sozinha!')" class="w-5 h-5 rounded-full bg-gdark-pill text-xs text-gdark-muted font-bold">?</button>
           </div>
-        </div>
-        <textarea id="rawInfoInput" rows="3" placeholder="Ex: A professora Lúcia avisou no Teams que a Lista 3 de Cálculo 2 sobre séries deve ser entregue até dia 28/10. Ou: Hoje na aula de Física 1 vimos conservação de momento, criar revisão..." class="w-full bg-[#141414] border border-notion-border rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500"></textarea>
-        <div class="flex justify-end">
-          <button onclick="processIngestedInfoWithAi()" id="btnIngestInfo" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition flex items-center gap-2">
-            <span>⚡ Atualizar Sistema & Recalcular Rota</span>
+          <button onclick="clearStudyChat()" class="text-xs font-semibold text-gdark-muted hover:text-rose-400">
+            Limpar chat
           </button>
         </div>
-      </div>
 
-      <!-- CHAT INTERATIVO COM MENTOR IA (AJUSTE DE TAREFAS, PRAZOS E IMPREVISTOS) -->
-      <div class="bg-notion-card border border-notion-border rounded-2xl p-4 flex flex-col h-[420px]">
-        <div class="flex items-center justify-between pb-3 border-b border-notion-border">
-          <div>
-            <h3 class="text-sm font-bold text-white">💬 Chat de Alinhamento & Imprevistos (Gemini 3.8)</h3>
-            <p class="text-[11px] text-notion-muted">Peça para trocar a tarefa atual, alterar prazos, dividir uma lista ou recalcular seu dia</p>
-          </div>
-          <button onclick="clearChatHistory()" class="text-[11px] text-notion-muted hover:text-rose-400">Limpar chat</button>
-        </div>
+        <!-- MENSAGENS DO ASSISTENTE DE ESTUDOS -->
+        <div id="studyChatMessages" class="flex-1 overflow-y-auto py-3 space-y-3 text-sm pr-1"></div>
 
-        <!-- MENSAGENS DO CHAT -->
-        <div id="aiChatMessages" class="flex-1 overflow-y-auto py-3 space-y-3 text-xs"></div>
-
-        <!-- INPUT DO CHAT -->
-        <div class="pt-2 border-t border-notion-border flex gap-2">
-          <input type="text" id="aiChatInput" onkeydown="if(event.key==='Enter') sendAiChatMessage()" placeholder="Ex: Tive um imprevisto e só tenho 45 min hoje, ajuste minha meta..." class="flex-1 bg-[#141414] border border-notion-border rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" />
-          <button onclick="sendAiChatMessage()" id="btnSendChat" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition shrink-0">
+        <!-- CAMPO DE ENTRADA UNIFICADO -->
+        <div class="pt-2 border-t border-gdark-border flex gap-2">
+          <input type="text" id="studyChatInput" onkeydown="if(event.key==='Enter') sendStudyAssistantMessage()" placeholder="Cole avisos do Teams, diga o que já fez ou ajuste prazos..." class="flex-1 bg-gdark-bg border border-gdark-border rounded-2xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500" />
+          <button onclick="sendStudyAssistantMessage()" id="btnStudyChatSend" class="px-4 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shrink-0">
             Enviar
           </button>
         </div>
       </div>
 
-    </section>
+    </div>
 
-    <!-- ========================================================================= -->
-    <!-- SUBPÁGINA 3: PAINEL DA SEMANA (ORDENAÇÃO NOTION & CONSEQUÊNCIA FDS)       -->
-    <!-- ========================================================================= -->
-    <section id="page-weekly" class="hidden space-y-5">
+    <!-- SUB-ABA 3B: SEMANA (COM BOTÃO CONCLUÍDO, FONTES COLORIDAS E MENU ☰) -->
+    <div id="studySub-weekly" class="hidden space-y-4">
 
-      <!-- TERMÔMETRO DE CONSEQUÊNCIA DO FIM DE SEMANA -->
-      <div id="weekendConsequenceBanner" class="bg-notion-card border border-notion-border rounded-2xl p-4 space-y-2.5">
+      <div class="bg-gdark-surface border border-gdark-border rounded-3xl p-4 space-y-4">
         <div class="flex items-center justify-between">
-          <div>
-            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-300">Protocolo de Responsabilidade</span>
-            <h3 class="text-sm font-bold text-white mt-1">Status do Fim de Semana (Sábado & Domingo)</h3>
+          <div class="flex items-center gap-2">
+            <h2 class="text-base font-bold text-white">Prioridades da Semana</h2>
+            <span id="weekendStatusPill" class="text-xs font-bold px-2.5 py-0.5 rounded-full"></span>
+            <button onclick="showHelpTooltip('Ordenado pelas 4 regras do seu Notion: 1º Prioridade -> 2º Validade -> 3º Status -> 4º Importância da Matéria. Se restar prioridade Alta na sexta à noite, o Sábado entra em Modo Recuperação.')" class="w-5 h-5 rounded-full bg-gdark-pill text-xs text-gdark-muted font-bold">?</button>
           </div>
-          <span id="weekendStatusBadge" class="text-xs font-bold px-2.5 py-1 rounded-lg"></span>
-        </div>
-        <p id="weekendStatusDesc" class="text-xs text-notion-muted leading-relaxed"></p>
-        <div class="w-full bg-[#141414] h-2 rounded-full overflow-hidden">
-          <div id="weeklyCompletionBar" class="bg-emerald-500 h-full transition-all duration-300" style="width: 0%"></div>
-        </div>
-      </div>
 
-      <!-- FILA DE PRIORIDADES DA SEMANA (AS 4 REGRAS DO NOTION) -->
-      <div class="bg-notion-card border border-notion-border rounded-2xl p-4 space-y-3.5">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <h2 class="text-sm font-bold text-white">Fila Geral Ordenada (Algoritmo Notion)</h2>
-            <p class="text-[11px] text-notion-muted">Ordem automática: 1º Prioridade &rarr; 2º Validade &rarr; 3º Status &rarr; 4º Importância da Matéria</p>
-          </div>
-          <button onclick="openNewTaskModal('')" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition shrink-0">
-            + Nova Tarefa
-          </button>
-        </div>
-
-        <div id="weeklyPriorityQueue" class="space-y-2"></div>
-      </div>
-
-    </section>
-
-    <!-- ========================================================================= -->
-    <!-- SUBPÁGINA 4: AS 8 MATÉRIAS (+ SUBPÁGINA INDIVIDUAL DE CADA MATÉRIA)       -->
-    <!-- ========================================================================= -->
-    <section id="page-subjects" class="hidden space-y-5">
-
-      <!-- VISÃO 4A: GRID DAS 8 MATÉRIAS -->
-      <div id="subjectsGridView" class="space-y-4">
-        <div class="flex items-center justify-between">
-          <div>
-            <h2 class="text-base font-bold text-white">Suas 8 Disciplinas • Semestre 2026/2</h2>
-            <p class="text-xs text-notion-muted">Toque em uma matéria para abrir a subpágina com tarefas, provas e aulas</p>
+          <!-- MENU DE 3 PAUZINHOS (☰) DA PÁGINA SEMANA -->
+          <div class="relative">
+            <button onclick="toggleWeeklyMenu()" class="w-9 h-9 rounded-xl bg-gdark-pill border border-gdark-border flex items-center justify-center text-base text-white hover:bg-neutral-700">
+              ☰
+            </button>
+            <div id="weeklyConfigDropdown" class="hidden absolute right-0 mt-2 w-60 bg-gdark-card border border-gdark-border rounded-2xl shadow-2xl p-2 z-30 space-y-1 text-xs">
+              <button onclick="openTaskModal(''); toggleWeeklyMenu();" class="w-full text-left px-3 py-2 rounded-xl hover:bg-gdark-pill text-white font-bold">
+                ➕ Adicionar Tarefa / Lista
+              </button>
+              <button onclick="openTaskModal('prova'); toggleWeeklyMenu();" class="w-full text-left px-3 py-2 rounded-xl hover:bg-gdark-pill text-rose-300 font-bold">
+                📅 Cadastrar Data de Prova / Trabalho
+              </button>
+              <button onclick="toggleShowCompletedWeekly(); toggleWeeklyMenu();" class="w-full text-left px-3 py-2 rounded-xl hover:bg-gdark-pill text-gdark-muted font-semibold">
+                👁️ Mostrar/Ocultar Concluídas
+              </button>
+            </div>
           </div>
         </div>
-        <div id="subjectsCardsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+
+        <div id="weeklyTasksList" class="space-y-2.5"></div>
       </div>
 
-      <!-- VISÃO 4B: SUBPÁGINA EXCLUSIVA DE UMA MATÉRIA ESPECÍFICA -->
-      <div id="subjectDetailView" class="hidden space-y-4">
-        <button onclick="closeSubjectDetail()" class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-400 hover:text-indigo-300">
-          <span>&larr;</span> <span>Voltar para todas as 8 matérias</span>
+    </div>
+
+    <!-- SUB-ABA 3C: AS 8 MATÉRIAS (MANTIDA COM FONTES COLORIDAS E SUBPÁGINAS) -->
+    <div id="studySub-subjects" class="hidden space-y-4">
+      <div id="subjectsGridContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+
+      <div id="subjectSingleView" class="hidden space-y-4">
+        <button onclick="closeSubjectSingleView()" class="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-400">
+          <span>&larr;</span> <span>Voltar para as 8 matérias</span>
         </button>
-
-        <!-- CABEÇALHO DA MATÉRIA -->
-        <div id="subjectDetailHeader" class="bg-notion-card border border-notion-border rounded-2xl p-4 space-y-3"></div>
-
-        <!-- TAREFAS ESPECÍFICAS DA MATÉRIA -->
-        <div class="bg-notion-card border border-notion-border rounded-2xl p-4 space-y-3">
+        <div id="subjectSingleHeader" class="bg-gdark-surface border border-gdark-border rounded-3xl p-4"></div>
+        <div class="bg-gdark-surface border border-gdark-border rounded-3xl p-4 space-y-3">
           <div class="flex items-center justify-between">
-            <h3 class="text-sm font-bold text-white">Afazeres & Listas desta Matéria</h3>
-            <button id="btnAddSubjectTask" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs">
-              + Adicionar Tarefa
-            </button>
+            <h3 class="text-base font-bold text-white">Tarefas & Provas da Matéria</h3>
+            <button id="btnAddTaskForSubject" class="px-3 py-1.5 rounded-xl bg-indigo-600 text-white font-bold text-xs">+ Adicionar</button>
           </div>
-          <div id="subjectSpecificTasksList" class="space-y-2"></div>
+          <div id="subjectSingleTasks" class="space-y-2"></div>
         </div>
-
-        <!-- REGISTRO DE AULAS & ANOTAÇÕES DA MATÉRIA -->
-        <div class="bg-notion-card border border-notion-border rounded-2xl p-4 space-y-3">
+        <div class="bg-gdark-surface border border-gdark-border rounded-3xl p-4 space-y-3">
           <div class="flex items-center justify-between">
-            <h3 class="text-sm font-bold text-white">Caderno de Aulas & Tópicos Vistos</h3>
-            <button onclick="addSubjectClassNote()" class="px-3 py-1.5 rounded-xl bg-notion-hover border border-notion-border text-xs font-semibold text-white">
-              + Registrar Aula
-            </button>
+            <h3 class="text-base font-bold text-white">Aulas & Tópicos (Caderno)</h3>
+            <button onclick="promptNewClassNote()" class="px-3 py-1.5 rounded-xl bg-gdark-pill text-white font-semibold text-xs">+ Aula</button>
           </div>
-          <div id="subjectClassNotesList" class="space-y-2"></div>
+          <div id="subjectSingleNotes" class="space-y-2"></div>
         </div>
       </div>
-
-    </section>
+    </div>
 
   </main>
 
-  <!-- MODAL: ADICIONAR / EDITAR TAREFA -->
-  <div id="newTaskModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-notion-card border border-notion-border w-full max-w-md rounded-2xl p-4 space-y-3">
-      <div class="flex justify-between items-center">
-        <h3 class="text-sm font-bold text-white">Adicionar Tarefa / Lista</h3>
-        <button onclick="closeNewTaskModal()" class="text-notion-muted hover:text-white text-lg">&times;</button>
-      </div>
-      <div class="space-y-2.5 text-xs">
-        <div>
-          <label class="text-notion-muted block mb-1">Matéria</label>
-          <select id="modalTaskSubject" class="w-full bg-[#141414] border border-notion-border rounded-xl px-3 py-2 text-white"></select>
-        </div>
-        <div>
-          <label class="text-notion-muted block mb-1">Descrição da Tarefa / Objetivo</label>
-          <input type="text" id="modalTaskTitle" placeholder="Ex: Resolver Lista 3 de Integrais" class="w-full bg-[#141414] border border-notion-border rounded-xl px-3 py-2 text-white" />
-        </div>
-        <div class="grid grid-cols-3 gap-2">
-          <div>
-            <label class="text-notion-muted block mb-1">Prioridade</label>
-            <select id="modalTaskPriority" class="w-full bg-[#141414] border border-notion-border rounded-xl px-2.5 py-2 text-white">
-              <option value="alta">Alta</option>
-              <option value="media" selected>Média</option>
-              <option value="baixa">Baixa</option>
-            </select>
-          </div>
-          <div>
-            <label class="text-notion-muted block mb-1">Validade / Prazo</label>
-            <input type="date" id="modalTaskDue" class="w-full bg-[#141414] border border-notion-border rounded-xl px-2.5 py-2 text-white" />
-          </div>
-          <div>
-            <label class="text-notion-muted block mb-1">Tempo Est. (min)</label>
-            <input type="number" id="modalTaskMins" value="50" class="w-full bg-[#141414] border border-notion-border rounded-xl px-2.5 py-2 text-white" />
-          </div>
-        </div>
-      </div>
-      <div class="flex gap-2 pt-2">
-        <button onclick="closeNewTaskModal()" class="px-4 py-2 rounded-xl bg-notion-hover text-xs text-notion-muted">Cancelar</button>
-        <button onclick="saveModalTask()" class="flex-1 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs">Salvar Tarefa</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: CONFIGURAÇÕES (API KEY & CALENDÁRIO ICS) -->
-  <div id="settingsModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-notion-card border border-notion-border w-full max-w-md rounded-2xl p-4 space-y-3.5">
-      <div class="flex justify-between items-center">
-        <h3 class="text-sm font-bold text-white">Configurações • API Gemini & Outlook ICS</h3>
-        <button onclick="closeSettingsModal()" class="text-notion-muted hover:text-white text-lg">&times;</button>
-      </div>
-      <p class="text-xs text-notion-muted">Usa automaticamente a mesma chave do seu app de Dieta se estiver no mesmo navegador.</p>
-      <div class="space-y-2 text-xs">
-        <label class="text-notion-muted block">Chave de API Gemini (<code class="text-white">gemini-3.8-flash</code>)</label>
-        <input type="password" id="settingsApiKey" placeholder="Cole sua chave AIza... ou AQ..." class="w-full bg-[#141414] border border-notion-border rounded-xl px-3 py-2 text-white" />
-      </div>
-      <div class="space-y-2 text-xs">
-        <label class="text-notion-muted block">Link ICS do Calendário Outlook</label>
-        <input type="text" id="settingsIcsUrl" class="w-full bg-[#141414] border border-notion-border rounded-xl px-3 py-2 text-white text-[11px]" />
-      </div>
-      <div class="flex gap-2 pt-1">
-        <button onclick="saveSettingsModal()" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs">Salvar</button>
-        <button onclick="exportStudyBackup()" class="px-3 py-2.5 rounded-xl bg-notion-hover border border-notion-border text-xs text-notion-text">Backup JSON</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- BARRA DE NAVEGAÇÃO INFERIOR (AS 4 SUBPÁGINAS PRINCIPAIS) -->
-  <nav class="fixed bottom-0 inset-x-0 z-40 bg-[#191919]/95 backdrop-blur border-t border-notion-border">
-    <div class="max-w-3xl mx-auto grid grid-cols-4 py-2">
-      <button onclick="switchPage('morning')" id="nav-morning" class="flex flex-col items-center gap-1 text-indigo-400">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
-        </svg>
-        <span class="text-[10px] font-bold">1. Radar & Feed</span>
+  <!-- =========================================================================== -->
+  <!-- BARRA DE NAVEGAÇÃO INFERIOR LIMPA                                           -->
+  <!-- =========================================================================== -->
+  <nav class="fixed bottom-0 inset-x-0 z-40 bg-[#121212]/95 backdrop-blur border-t border-gdark-border">
+    <div class="max-w-xl mx-auto grid grid-cols-3 py-2.5">
+      <button onclick="navigateMainView('discover')" id="bottomNav-discover" class="flex flex-col items-center gap-1 text-blue-400">
+        <span class="text-lg">🏠</span>
+        <span class="text-[11px] font-bold">Início & Feed</span>
       </button>
-
-      <button onclick="switchPage('ai')" id="nav-ai" class="flex flex-col items-center gap-1 text-notion-muted">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-        </svg>
-        <span class="text-[10px] font-bold">2. Missão & IA</span>
+      <button onclick="navigateMainView('routine')" id="bottomNav-routine" class="flex flex-col items-center gap-1 text-gdark-muted">
+        <span class="text-lg">⚡</span>
+        <span class="text-[11px] font-bold">Rotina</span>
       </button>
-
-      <button onclick="switchPage('weekly')" id="nav-weekly" class="flex flex-col items-center gap-1 text-notion-muted">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-        </svg>
-        <span class="text-[10px] font-bold">3. Semana</span>
-      </button>
-
-      <button onclick="switchPage('subjects')" id="nav-subjects" class="flex flex-col items-center gap-1 text-notion-muted">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-        </svg>
-        <span class="text-[10px] font-bold">4. Matérias (8)</span>
+      <button onclick="navigateMainView('studies')" id="bottomNav-studies" class="flex flex-col items-center gap-1 text-gdark-muted">
+        <span class="text-lg">📚</span>
+        <span class="text-[11px] font-bold">Estudos</span>
       </button>
     </div>
   </nav>
 
-  <script>
-    // =========================================================================
-    // CONSTANTES GERAIS, ROTINA LIVRE E DADOS EXTRAÍDOS DO SEU NOTION
-    // =========================================================================
-    const API_KEY_STORAGE = 'nutri_ufu_gemini_key'; // Compartilha a mesma chave já salva no app de dieta!
-    const STUDY_DB_KEY = 'ufu_mecatronica_study_db_v1';
-    const DEFAULT_MODEL = 'gemini-3.8-flash';
-    const DEFAULT_ICS_URL = 'https://outlook.live.com/owa/calendar/00000000-0000-0000-0000-000000000000/67b78bb7-ce16-48ee-a1aa-f3fc26b08a84/cid-90AF0D4E6356D04A/calendar.ics';
+  <!-- =========================================================================== -->
+  <!-- MODAL GLOBAL DE CONFIGURAÇÕES (ENGRENAGEM DA 1ª PÁGINA)                     -->
+  <!-- =========================================================================== -->
+  <div id="globalSettingsModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-gdark-surface border border-gdark-border w-full max-w-lg rounded-3xl p-5 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-white">⚙️ Configurações, Salvos & Notificações</h3>
+        <button onclick="closeGlobalSettings()" class="text-gdark-muted hover:text-white text-2xl leading-none">&times;</button>
+      </div>
 
-    // HORÁRIOS REAIS DE AULA (DO SEU OUTLOOK) E JANELAS DE TEMPO LIVRE ATUALIZADAS
-    const WEEKLY_SCHEDULE = {
-      1: { // Segunda
+      <!-- ABAS DA ENGRENAGEM -->
+      <div class="flex gap-1.5 bg-gdark-bg p-1 rounded-2xl text-xs font-bold">
+        <button onclick="switchSettingsTab('config')" id="setTab-config" class="flex-1 py-2 rounded-xl bg-gdark-pill text-white">🔑 IA & Memória</button>
+        <button onclick="switchSettingsTab('saved')" id="setTab-saved" class="flex-1 py-2 rounded-xl text-gdark-muted">❤️ Notícias Salvas</button>
+        <button onclick="switchSettingsTab('notifications')" id="setTab-notifications" class="flex-1 py-2 rounded-xl text-gdark-muted">📲 Avisos & WhatsApp</button>
+      </div>
+
+      <!-- ABA 1: IA, NOTEBOOKLM CONTEXTO & BACKUP -->
+      <div id="settingsPane-config" class="space-y-3 text-sm">
+        <div>
+          <label class="text-xs font-bold text-gdark-muted block mb-1">Chave API Gemini (gemini-3.8-flash)</label>
+          <input type="password" id="cfgApiKey" placeholder="Cole sua chave AIza..." class="w-full bg-gdark-bg border border-gdark-border rounded-2xl px-3.5 py-2.5 text-white text-sm" />
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-xs font-bold text-gdark-muted">🧠 Memória Sincronizada (Contexto Gemini / NotebookLM)</label>
+            <button onclick="showHelpTooltip('Tudo o que estiver escrito aqui é lido automaticamente por todos os chats do seu aplicativo (Estudos, Treino, Dieta e Geral) para que a IA saiba exatamente onde você está em cada matéria e sua rotina.')" class="w-4 h-4 rounded-full bg-gdark-pill text-[10px] text-gdark-muted">?</button>
+          </div>
+          <textarea id="cfgNotebookContext" rows="4" class="w-full bg-gdark-bg border border-gdark-border rounded-2xl p-3 text-xs text-white"></textarea>
+        </div>
+        <div class="flex gap-2 pt-1">
+          <button onclick="saveGlobalConfig()" class="flex-1 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm">Salvar Tudo</button>
+          <button onclick="exportAllAppData()" class="px-4 py-2.5 rounded-2xl bg-gdark-pill text-xs font-bold text-white">Exportar Backup</button>
+        </div>
+      </div>
+
+      <!-- ABA 2: NOTÍCIAS CURTIDAS / SALVAS (❤️) -->
+      <div id="settingsPane-saved" class="hidden space-y-3">
+        <div id="savedNewsContainer" class="space-y-2.5 max-h-80 overflow-y-auto"></div>
+      </div>
+
+      <!-- ABA 3: EDITOR DE MENSAGENS, WHATSAPP, SMS E NOTIFICAÇÕES -->
+      <div id="settingsPane-notifications" class="hidden space-y-3 text-xs">
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-gdark-muted block mb-1">Seu Número (WhatsApp/SMS)</label>
+            <input type="text" id="cfgPhone" placeholder="Ex: 5534999999999" class="w-full bg-gdark-bg border border-gdark-border rounded-xl px-3 py-2 text-white" />
+          </div>
+          <div>
+            <label class="text-gdark-muted block mb-1">Tópico ntfy.sh (Push em 2º plano)</label>
+            <input type="text" id="cfgNtfyTopic" placeholder="Ex: ithan_ufu_rotina" class="w-full bg-gdark-bg border border-gdark-border rounded-xl px-3 py-2 text-white" />
+          </div>
+        </div>
+
+        <div class="flex gap-2">
+          <button onclick="requestBrowserNotificationPerm()" class="flex-1 py-2 rounded-xl bg-indigo-600/30 border border-indigo-500/40 text-indigo-200 font-bold">
+            🔔 Ativar Permissão de Notificação
+          </button>
+          <button onclick="sendTestNotificationNow()" class="px-3 py-2 rounded-xl bg-emerald-600 text-white font-bold">
+            Testar Agora
+          </button>
+        </div>
+
+        <div class="font-bold text-white pt-1">Personalizar Horários e Textos dos Avisos:</div>
+        <div id="customRemindersEditorList" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+
+        <button onclick="saveNotificationsConfig()" class="w-full py-2.5 rounded-2xl bg-blue-600 text-white font-bold text-sm">
+          Salvar Avisos Personalizados
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================== -->
+  <!-- MODAL DE EDIÇÃO DA AGENDA & JANELAS LIVRES (ENGRENAGEM DA PÁGINA ROTINA)    -->
+  <!-- =========================================================================== -->
+  <div id="scheduleEditorModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-gdark-surface border border-gdark-border w-full max-w-lg rounded-3xl p-5 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-white">🗓️ Editar Aulas, Rotina & Janelas Livres</h3>
+        <button onclick="closeScheduleEditorModal()" class="text-gdark-muted hover:text-white text-2xl leading-none">&times;</button>
+      </div>
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="text-gdark-muted font-bold block mb-1">Selecione o Dia da Semana para Editar</label>
+          <select id="editSchedDaySelect" onchange="loadDayIntoScheduleEditor()" class="w-full bg-gdark-bg border border-gdark-border rounded-xl px-3 py-2.5 text-white font-bold text-sm"></select>
+        </div>
+        <div>
+          <label class="text-emerald-400 font-bold block mb-1">Janelas Livres de Estudo (1 por linha • Início e Fim)</label>
+          <textarea id="editSchedFreeWindows" rows="3" placeholder="Ex: 09:40 - 12:40 • Janela Manhã (3h)" class="w-full bg-gdark-bg border border-gdark-border rounded-xl p-3 text-white"></textarea>
+        </div>
+        <div>
+          <label class="text-blue-400 font-bold block mb-1">Aulas, Treino e Refeições do Dia (1 por linha)</label>
+          <textarea id="editSchedClasses" rows="6" placeholder="Ex: 10:40 - 12:20 • Algoritmos (Bloco 1B)" class="w-full bg-gdark-bg border border-gdark-border rounded-xl p-3 text-white"></textarea>
+        </div>
+        <button onclick="saveScheduleEditorChanges()" class="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm">
+          Salvar Horários do Dia
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL ADICIONAR TAREFA / PROVA -->
+  <div id="taskModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-gdark-surface border border-gdark-border w-full max-w-md rounded-3xl p-5 space-y-3.5">
+      <div class="flex justify-between items-center">
+        <h3 class="text-base font-bold text-white">Nova Tarefa, Trabalho ou Prova</h3>
+        <button onclick="closeTaskModal()" class="text-gdark-muted text-2xl leading-none">&times;</button>
+      </div>
+      <div class="space-y-3 text-sm">
+        <select id="newTaskSubject" class="w-full bg-gdark-bg border border-gdark-border rounded-2xl px-3.5 py-2.5 text-white"></select>
+        <input type="text" id="newTaskTitle" placeholder="Ex: Prova 1 de Cálculo 2 / Lista de Exercícios" class="w-full bg-gdark-bg border border-gdark-border rounded-2xl px-3.5 py-2.5 text-white" />
+        <div class="grid grid-cols-3 gap-2 text-xs">
+          <select id="newTaskPriority" class="bg-gdark-bg border border-gdark-border rounded-xl px-2.5 py-2.5 text-white">
+            <option value="alta">Alta</option>
+            <option value="media" selected>Média</option>
+            <option value="baixa">Baixa</option>
+          </select>
+          <input type="date" id="newTaskDue" class="bg-gdark-bg border border-gdark-border rounded-xl px-2.5 py-2.5 text-white" />
+          <input type="number" id="newTaskMins" value="50" placeholder="Min" class="bg-gdark-bg border border-gdark-border rounded-xl px-2.5 py-2.5 text-white" />
+        </div>
+        <button onclick="saveNewTaskFromModal()" class="w-full py-3 rounded-2xl bg-indigo-600 text-white font-bold text-sm">Salvar na Fila</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE DICA RÁPIDA (?) -->
+  <div id="helpTooltipModal" class="fixed inset-0 z-50 hidden bg-black/70 flex items-center justify-center p-6" onclick="this.classList.add('hidden')">
+    <div class="bg-gdark-surface border border-gdark-border max-w-sm w-full rounded-3xl p-5 space-y-3 text-center shadow-2xl" onclick="event.stopPropagation()">
+      <div class="w-10 h-10 rounded-full bg-indigo-500/20 text-indigo-300 font-bold flex items-center justify-center mx-auto text-lg">?</div>
+      <p id="helpTooltipText" class="text-sm text-gdark-text leading-relaxed"></p>
+      <button onclick="document.getElementById('helpTooltipModal').classList.add('hidden')" class="w-full py-2.5 rounded-2xl bg-gdark-pill text-xs font-bold text-white">Entendi</button>
+    </div>
+  </div>
+
+  <script>
+    // ===========================================================================
+    // REGISTRO DO SERVICE WORKER E CAPTURA DO EVENTO DE INSTALAÇÃO (PWA)
+    // ===========================================================================
+    let deferredInstallPrompt = null;
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      document.getElementById('installAppBanner').classList.remove('hidden');
+    });
+    async function triggerPwaInstall() {
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      document.getElementById('installAppBanner').classList.add('hidden');
+    }
+
+    // ===========================================================================
+    // BANCO DE DADOS UNIFICADO (COM CONTEXTO COMPLETO DO SEMESTRE)
+    // ===========================================================================
+    const API_KEY_STORAGE = 'nutri_ufu_gemini_key';
+    const HUB_STORAGE_KEY = 'ufu_super_hub_v2';
+    const GEMINI_MODEL = 'gemini-3.8-flash';
+
+    const DEFAULT_CONTEXT_MEMORY = `Estudante: Ithan, Engenharia Mecatrônica na UFU (Semestre 2026/2: 01/09/2026 a 19/12/2026).
+Matérias em curso (8):
+1. Algoritmos (Profª Rita, 50+50, Importância Alta, Dificuldade Alta) - Foco em listas de lógica, condicionais, laços e C/C++.
+2. Cálculo 2 (Profª Lúcia, 30+30+40+extras, Dificuldade Alta) - Foco em integrais definidas, volumes de sólidos e séries.
+3. Física 1 (Prof. Adamo, 40+40+20, Dificuldade Alta) - Cinemática, dinâmica e conservação.
+4. Álgebra Linear (Prof. Giovanny, 35+35+40+10) - Matrizes, determinantes e sistemas.
+5. Estatística (Prof. Giovanny, 35+35+35+12+10) - Dispersão e probabilidades.
+6. Geometria Analítica (Profª Marisa, 30+30+30+10) - Vetores, retas, planos, Cônicas e 8 Superfícies Quádricas.
+7. Lab Física (Prof. Acácio, 60 rel + 40 PF) - Paquímetro, micrômetro, MRU e lançamento oblíquo.
+8. Segurança do Trabalho (Prof. João Cícero) - ANPs entregues, NRs e robótica colaborativa.
+Rotina Física e Dieta: Treino às 06:30, Almoço RU 12:00, Janta 19:00, Meta 140g proteína e 3L de água.
+Finanças: Regra proporcional Pix (81,48% Contas R$ 1100, 11,11% Lazer/Uber R$ 150, 7,41% Reserva Intocável).`;
+
+    const DEFAULT_SCHEDULE = {
+      1: {
         name: 'Segunda-feira',
-        classes: ['10:40–12:20 • Algoritmos', '13:10–14:50 • Cálculo 2', '14:50–16:30 • Física 1', '16:50–18:30 • Segurança do Trabalho'],
-        freeWindows: ['09:40 até 12:40 (Manhã • 3h)', '19:30 até 23:30 (Noite • 4h)'],
-        totalFreeHours: 7.0
+        freeWindows: ['09:40 - 12:40 • Janela Manhã (3h)', '19:30 - 23:30 • Janela Noite (4h)'],
+        classes: [
+          '06:30 - 07:40 • 🏋️‍♂️ Treino Matinal',
+          '10:40 - 12:20 • 🎓 Algoritmos (Profª Rita)',
+          '12:20 - 13:10 • 🍽️ Almoço RU UFU',
+          '13:10 - 14:50 • 🎓 Cálculo 2 (Profª Lúcia)',
+          '14:50 - 16:30 • 🎓 Física 1 (Prof. Adamo)',
+          '16:50 - 18:30 • 🎓 Segurança do Trabalho',
+          '18:45 - 19:30 • 🍽️ Jantar'
+        ]
       },
-      2: { // Terça
+      2: {
         name: 'Terça-feira',
-        classes: ['10:40–12:20 • Segurança do Trabalho', '13:10–14:50 • Cálculo 2', '14:50–16:30 • Álgebra Linear'],
-        freeWindows: ['09:40 até 12:40 (Manhã • 3h)', '19:00 até 23:30 (Noite • 4h30)'],
-        totalFreeHours: 7.5
+        freeWindows: ['09:40 - 12:40 • Janela Manhã (3h)', '19:00 - 23:30 • Janela Noite (4h30)'],
+        classes: [
+          '06:30 - 07:40 • 🏋️‍♂️ Treino Matinal',
+          '10:40 - 12:20 • 🎓 Segurança do Trabalho',
+          '12:20 - 13:10 • 🍽️ Almoço RU UFU',
+          '13:10 - 14:50 • 🎓 Cálculo 2 (Profª Lúcia)',
+          '14:50 - 16:30 • 🎓 Álgebra Linear (Prof. Giovanny)',
+          '18:15 - 19:00 • 🍽️ Jantar'
+        ]
       },
-      3: { // Quarta
+      3: {
         name: 'Quarta-feira',
-        classes: ['10:40–12:20 • Segurança / Lab', '13:10–14:50 • Cálculo 2', '14:50–16:30 • Algoritmos'],
-        freeWindows: ['09:40 até 12:40 (Manhã • 3h)', '19:00 até 23:30 (Noite • 4h30)'],
-        totalFreeHours: 7.5
+        freeWindows: ['09:40 - 12:40 • Janela Manhã (3h)', '19:00 - 23:30 • Janela Noite (4h30)'],
+        classes: [
+          '06:30 - 07:40 • 🏋️‍♂️ Treino Matinal',
+          '10:40 - 12:20 • 🎓 Lab Física / Segurança',
+          '12:20 - 13:10 • 🍽️ Almoço RU UFU',
+          '13:10 - 14:50 • 🎓 Cálculo 2 (Profª Lúcia)',
+          '14:50 - 16:30 • 🎓 Algoritmos (Profª Rita)',
+          '18:15 - 19:00 • 🍽️ Jantar'
+        ]
       },
-      4: { // Quinta
+      4: {
         name: 'Quinta-feira',
-        classes: ['11:30–12:50 • Algoritmos', '13:10–14:50 • Física 1', '14:50–16:30 • Estatística', '16:50–18:30 • Estatística'],
-        freeWindows: ['12:00 até 13:00 (Almoço/Intervalo • 1h)', '19:00 até 23:30 (Noite • 4h30)'],
-        totalFreeHours: 5.5
+        freeWindows: ['12:00 - 13:00 • Janela Almoço (1h)', '19:00 - 23:30 • Janela Noite (4h30)'],
+        classes: [
+          '06:30 - 07:40 • 🏋️‍♂️ Treino Matinal',
+          '11:30 - 12:50 • 🎓 Algoritmos (Profª Rita)',
+          '13:10 - 14:50 • 🎓 Física 1 (Prof. Adamo)',
+          '14:50 - 18:30 • 🎓 Estatística (Prof. Giovanny)',
+          '18:30 - 19:00 • 🍽️ Jantar'
+        ]
       },
-      5: { // Sexta
+      5: {
         name: 'Sexta-feira',
-        classes: ['11:30–12:50 • Algoritmos', '13:10–14:50 • Estatística', '14:50–16:00 • Geometria Analítica'],
-        freeWindows: ['12:00 até 13:00 (Intervalo • 1h)', '15:00 até 23:30 (Tarde + Noite Livre • 8h30)'],
-        totalFreeHours: 9.5
+        freeWindows: ['12:00 - 13:00 • Intervalo (1h)', '15:00 - 23:30 • Tarde e Noite Livre (8h30)'],
+        classes: [
+          '06:30 - 07:40 • 🏋️‍♂️ Treino Matinal',
+          '11:30 - 12:50 • 🎓 Algoritmos (Profª Rita)',
+          '13:10 - 14:50 • 🎓 Estatística (Prof. Giovanny)',
+          '14:50 - 16:00 • 🎓 Geometria Analítica (Profª Marisa)'
+        ]
       },
-      6: { // Sábado
+      6: {
         name: 'Sábado',
-        classes: ['Sem aulas fixas (Arrumar o apê & Descanso)'],
-        freeWindows: ['Condicional: Livre se a meta da semana foi batida; Modo Recuperação se houver atraso'],
-        totalFreeHours: 4.0
+        freeWindows: ['Manhã/Tarde Livre (ou Modo Recuperação se houver pendência Alta)'],
+        classes: [
+          '09:00 - 11:00 • 🧹 Arrumar o apartamento & Organização',
+          '12:00 - 13:00 • 🍽️ Almoço',
+          '16:00 - 17:15 • 🏋️‍♂️ Treino de Sábado'
+        ]
       },
-      0: { // Domingo
+      0: {
         name: 'Domingo',
-        classes: ['Descanso & Planejamento Semanal'],
-        freeWindows: ['Condicional: Livre se a meta da semana foi batida'],
-        totalFreeHours: 3.0
+        freeWindows: ['Descanso & Revisão Leve da Semana'],
+        classes: [
+          '10:00 - 11:00 • 📋 Revisar planejamento da semana e metas'
+        ]
       }
     };
 
-    // SUAS 8 MATÉRIAS REAIS EXTRAÍDAS DO NOTION
-    const INITIAL_SUBJECTS = [
-      { id: 'algoritmos', name: 'Algoritmos', prof: 'Rita', workload: 5, exams: '50 + 50', importance: 'alto', difficulty: 'alta', notes: ['Aula 1: Introdução e lógica', 'Aula 2: Estruturas e listas de exercícios', 'Aula 4: Estruturas condicionais e repetição'] },
-      { id: 'calculo2', name: 'Cálculo 2', prof: 'Lúcia', workload: 6, exams: '30 + 30 + 40 + ptos extras', importance: 'medio', difficulty: 'alta', notes: ['Integrais definidas e cálculo de volumes', 'Técnicas de integração'] },
-      { id: 'fisica1', name: 'Física 1', prof: 'Adamo', workload: 4, exams: '40 + 40 + 20', importance: 'medio', difficulty: 'alta', notes: ['Cinemática e Dinâmica de partículas'] },
-      { id: 'algebralinear', name: 'Álgebra Linear', prof: 'Giovanny', workload: 3, exams: '35 + 35 + 40 + 10 + ptos extras', importance: 'medio', difficulty: 'media', notes: ['Matrizes, determinantes e sistemas lineares'] },
-      { id: 'estatistica', name: 'Estatística', prof: 'Giovanny', workload: 4, exams: '35 + 35 + 35 + 12 + 10', importance: 'medio', difficulty: 'media', notes: ['Medidas de dispersão e probabilidades'] },
-      { id: 'geometria', name: 'Geometria Analítica', prof: 'Marisa', workload: 4, exams: '30 + 30 + 30 + 10', importance: 'medio', difficulty: 'media', notes: ['Vetores, retas e planos no R3'] },
+    const DEFAULT_SUBJECTS = [
+      { id: 'algoritmos', name: 'Algoritmos', prof: 'Rita', workload: 5, exams: '50 + 50', importance: 'alto', difficulty: 'alta', notes: ['Aula 1: Lógica e estrutura', 'Aula 2: Listas de exercícios', 'Aula 4: Condicionais e repetição'] },
+      { id: 'calculo2', name: 'Cálculo 2', prof: 'Lúcia', workload: 6, exams: '30 + 30 + 40 + extras', importance: 'medio', difficulty: 'alta', notes: ['Integrais definidas e cálculo de volumes'] },
+      { id: 'fisica1', name: 'Física 1', prof: 'Adamo', workload: 4, exams: '40 + 40 + 20', importance: 'medio', difficulty: 'alta', notes: ['Cinemática e dinâmica'] },
+      { id: 'algebralinear', name: 'Álgebra Linear', prof: 'Giovanny', workload: 3, exams: '35 + 35 + 40 + 10', importance: 'medio', difficulty: 'media', notes: ['Matrizes e sistemas lineares'] },
+      { id: 'estatistica', name: 'Estatística', prof: 'Giovanny', workload: 4, exams: '35 + 35 + 35 + 12 + 10', importance: 'medio', difficulty: 'media', notes: ['Medidas de dispersão e probabilidade'] },
+      { id: 'geometria', name: 'Geometria Analítica', prof: 'Marisa', workload: 4, exams: '30 + 30 + 30 + 10', importance: 'medio', difficulty: 'media', notes: ['Vetores, Cônicas (Parábola, Elipse, Hipérbole) e 8 Superfícies Quádricas'] },
       { id: 'labfisica', name: 'Lab Física', prof: 'Acácio', workload: 2, exams: '60 relat. + 40 PF', importance: 'medio', difficulty: 'media', notes: ['Paquímetro, micrômetro, MRU e lançamento oblíquo'] },
-      { id: 'seguranca', name: 'Segurança do Trabalho', prof: 'João Cícero', workload: 2, exams: '30 + 16 + 4 + 12 + 24 + 24', importance: 'baixo', difficulty: 'alta', notes: ['ANPs 1 e 2 entregues (30 pts)', 'Normas NR-1, NR-12 e ISO 10218 (Cobots)'] }
+      { id: 'seguranca', name: 'Segurança do Trabalho', prof: 'João Cícero', workload: 2, exams: '30 + 16 + 4 + 12 + 24 + 24', importance: 'baixo', difficulty: 'alta', notes: ['ANPs 1 e 2 concluídas • NRs e ISO 10218'] }
     ];
 
-    // TAREFAS EXTRAÍDAS DO SEU ARQUIVO ZIP DO NOTION
-    const INITIAL_TASKS = [
-      { id: 't1', subjectId: 'algoritmos', title: 'Fazer a lista de exercícios de Algoritmos (Aulas 1 a 4)', priority: 'alta', due: '2026-10-20', status: 'todo', estMins: 60 },
-      { id: 't2', subjectId: 'calculo2', title: 'Lista 2 de Cálculo 2', priority: 'alta', due: '2026-10-21', status: 'todo', estMins: 60 },
-      { id: 't3', subjectId: 'calculo2', title: 'Exercícios de volumes com métodos para aprimorar habilidades', priority: 'media', due: '2026-10-22', status: 'todo', estMins: 50 },
-      { id: 't4', subjectId: 'calculo2', title: 'Exercícios do livro para aprimorar habilidades com integrais', priority: 'media', due: '2026-10-24', status: 'todo', estMins: 50 },
-      { id: 't5', subjectId: 'fisica1', title: 'Começar lista de exercícios + exercícios avançados de Física 1', priority: 'alta', due: '2026-10-21', status: 'todo', estMins: 60 },
-      { id: 't6', subjectId: 'geometria', title: 'Fazer lista de exercícios GA', priority: 'media', due: '2026-10-22', status: 'todo', estMins: 45 },
-      { id: 't7', subjectId: 'geometria', title: 'Exercícios avançados GA + Revisão 1, 2, 3', priority: 'media', due: '2026-10-25', status: 'todo', estMins: 50 },
-      { id: 't8', subjectId: 'algebralinear', title: 'Fazer lista de exercícios de Matrizes', priority: 'media', due: '2026-10-22', status: 'todo', estMins: 45 },
-      { id: 't9', subjectId: 'algebralinear', title: 'Exercícios avançados revisão de Matrizes', priority: 'baixa', due: '2026-10-26', status: 'todo', estMins: 45 },
-      { id: 't10', subjectId: 'estatistica', title: 'Fazer lista de exercícios de Estatística', priority: 'media', due: '2026-10-23', status: 'todo', estMins: 50 },
-      { id: 't11', subjectId: 'estatistica', title: 'Exercícios avançados de Estatística', priority: 'baixa', due: '2026-10-27', status: 'todo', estMins: 45 },
-      { id: 't12', subjectId: 'labfisica', title: 'Ler o roteiro de experimento da próxima aula de Lab Física', priority: 'alta', due: '2026-10-20', status: 'todo', estMins: 30 },
-      { id: 't13', subjectId: 'seguranca', title: 'Registrar fotos de locais que apontam riscos + Atividade', priority: 'media', due: '2026-10-23', status: 'todo', estMins: 40 }
+    const DEFAULT_TASKS = [
+      { id: 't1', subjectId: 'algoritmos', title: 'Fazer lista de exercícios de Algoritmos (Aulas 1 a 4)', priority: 'alta', due: '2026-10-20', status: 'todo', estMins: 60 },
+      { id: 't2', subjectId: 'calculo2', title: 'Resolver Lista 2 de Cálculo 2', priority: 'alta', due: '2026-10-21', status: 'todo', estMins: 60 },
+      { id: 't3', subjectId: 'fisica1', title: 'Começar lista de exercícios + avançados de Física 1', priority: 'alta', due: '2026-10-21', status: 'todo', estMins: 60 },
+      { id: 't4', subjectId: 'labfisica', title: 'Ler roteiro de experimento da próxima aula de Lab Física', priority: 'alta', due: '2026-10-20', status: 'todo', estMins: 30 },
+      { id: 't5', subjectId: 'geometria', title: 'Revisar PDF de Cônicas e Superfícies Quádricas + Lista GA', priority: 'media', due: '2026-10-22', status: 'todo', estMins: 50 },
+      { id: 't6', subjectId: 'calculo2', title: 'Exercícios de volumes com métodos para aprimorar habilidades', priority: 'media', due: '2026-10-22', status: 'todo', estMins: 50 },
+      { id: 't7', subjectId: 'algebralinear', title: 'Fazer lista de exercícios de Matrizes', priority: 'media', due: '2026-10-22', status: 'todo', estMins: 45 },
+      { id: 't8', subjectId: 'estatistica', title: 'Fazer lista de exercícios de Estatística', priority: 'media', due: '2026-10-23', status: 'todo', estMins: 50 },
+      { id: 't9', subjectId: 'seguranca', title: 'Registrar fotos de locais com riscos + Atividade 1', priority: 'media', due: '2026-10-23', status: 'todo', estMins: 40 }
     ];
 
-    // NOTÍCIAS CURADAS INICIAIS (COM ATUALIZADOR RSS AO VIVO)
-    const INITIAL_NEWS = [
-      { category: 'ufu', badge: '🔴 1. UFU & Engenharias', title: 'Semestre 2026/2 em andamento: confira prazos acadêmicos da PROGRAD (01/09 a 19/12)', source: 'Comunica UFU / PROGRAD', url: 'https://comunica.ufu.br/noticias/2026', date: 'Out 2026' },
-      { category: 'ufu', badge: '🔴 1. UFU & Engenharias', title: 'FEMEC/UFU consolida protagonismo internacional após sediar Simpósio de Engenharia Robótica (Meder 2026)', source: 'Comunica UFU • Engenharia', url: 'https://comunica.ufu.br/topicos/engenharia', date: 'UFU Santa Mônica' },
-      { category: 'ufu', badge: '🔴 1. UFU & Engenharias', title: 'Editais abertos para programas de Pós-Graduação e Iniciação Científica nas Engenharias e Matemática na UFU', source: 'Portal PROPP / Comunica UFU', url: 'https://comunica.ufu.br/noticias/2026', date: 'Out 2026' },
-      { category: 'tech', badge: '🟡 2. Mecatrônica, IA & Tech', title: 'Sistemas Embarcados e Robótica Colaborativa: integração de sensores e inferência local em microcontroladores ESP32', source: 'Engenharia & Automação', url: 'https://news.google.com/search?q=engenharia+mecatronica+robotica+inteligencia+artificial&hl=pt-BR&gl=BR&ceid=BR:pt-419', date: 'Tendência Técnica' },
-      { category: 'tech', badge: '🟡 2. Mecatrônica, IA & Tech', title: 'Demanda por engenheiros com domínio em IA aplicada, C/C++ e controle de sistemas físicos cresce na indústria nacional', source: 'Tecnologia & Indústria BR', url: 'https://news.google.com/search?q=inteligencia+artificial+engenharia+brasil&hl=pt-BR&gl=BR&ceid=BR:pt-419', date: 'Mercado Tech' },
-      { category: 'politics', badge: '🔵 3. Política BR & Mundo', title: 'Debates econômicos no Congresso: orçamento para universidades federais, regulação de IA e pautas trabalhistas', source: 'Política Nacional & Economia', url: 'https://news.google.com/search?q=politica+brasil+economia+educacao&hl=pt-BR&gl=BR&ceid=BR:pt-419', date: 'Panorama Brasil' }
+    // NOTÍCIAS ESTILO GOOGLE DISCOVER COM IMAGENS DE CAPA
+    const DEFAULT_DISCOVER_NEWS = [
+      {
+        id: 'n1',
+        category: 'ufu',
+        icon: '📖',
+        title: 'UFU amplia laboratórios de pesquisa em Engenharia, Automação e Sistemas Inteligentes no Campus Santa Mônica',
+        source: 'Comunica UFU',
+        time: '1 dia',
+        url: 'https://comunica.ufu.br/topicos/engenharia',
+        image: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=900&q=80'
+      },
+      {
+        id: 'n2',
+        category: 'ufu',
+        icon: '📖',
+        title: 'PROGRAD e Diretórios das Engenharias divulgam oportunidades de Iniciação Científica e Monitoria para 2026/2',
+        source: 'Portal UFU',
+        time: '2 dias',
+        url: 'https://comunica.ufu.br/noticias/2026',
+        image: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=900&q=80'
+      },
+      {
+        id: 'n3',
+        category: 'tech',
+        icon: '🤖',
+        title: 'Robótica Colaborativa e ESP32-C6: como a IA embarcada está transformando o controle industrial e a Mecatrônica',
+        source: 'Engenharia & Tech',
+        time: '5 h',
+        url: 'https://news.google.com/search?q=engenharia+mecatronica+robotica+inteligencia+artificial&hl=pt-BR&gl=BR&ceid=BR:pt-419',
+        image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=900&q=80'
+      },
+      {
+        id: 'n4',
+        category: 'tech',
+        icon: '🤖',
+        title: 'Avanço dos modelos multimodais e agentes de código acelera projetos de sistemas físicos e visão computacional',
+        source: 'Mundo IA',
+        time: '8 h',
+        url: 'https://news.google.com/search?q=inteligencia+artificial+tecnologia+brasil&hl=pt-BR&gl=BR&ceid=BR:pt-419',
+        image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=900&q=80'
+      },
+      {
+        id: 'n5',
+        category: 'politics',
+        icon: '🌐',
+        title: 'Panorama Político e Econômico: debates sobre investimentos em tecnologia, indústria nacional e universidades',
+        source: 'Brasil & Mundo',
+        time: 'Hoje',
+        url: 'https://news.google.com/search?q=politica+economia+brasil+mundo&hl=pt-BR&gl=BR&ceid=BR:pt-419',
+        image: 'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=900&q=80'
+      }
     ];
 
-    let state = loadState();
-    let currentNewsFilter = 'all';
-    let currentOpenSubjectId = null;
-    let timerInterval = null;
-    let timerSecondsLeft = 50 * 60;
-    let timerRunning = false;
+    const DEFAULT_REMINDERS = [
+      { id: 'r1', time: '06:15', title: '🏋️‍♂️ Hora do Treino', msg: 'Bom dia, Ithan! Qual estilo de treino vamos encarar às 06:30? Prepare a água e a creatina.' },
+      { id: 'r2', time: '09:40', title: '📚 1ª Janela Livre de Estudos', msg: 'Sua janela livre da manhã começou! Abra a aba Estudos e execute sua Tarefa #1 por 50 min.' },
+      { id: 'r3', time: '12:00', title: '🥗 Almoço RU & Hidratação', msg: 'Hora do almoço no RU! Registre o prato no app de Dieta e confira se já bateu 1,5L de água.' },
+      { id: 'r4', time: '16:30', title: '💧 Lembrete de Água & Whey', msg: 'Tarde puxada de aulas! Beba 500ml de água agora e registre seu lanche/whey.' },
+      { id: 'r5', time: '19:15', title: '🎯 Janela Noturna de Foco', msg: 'Janela da noite aberta! Vamos concluir a meta de estudos de hoje para garantir o fim de semana livre.' }
+    ];
 
-    function loadState() {
+    let db = loadHubDb();
+    let currentFeedCategory = 'all';
+    let currentStudyMode = 'single'; // single | exam | recovery
+    let showCompletedWeekly = true;
+    let activeSubjectDetailId = null;
+    let studyTimerInterval = null;
+    let studyTimerSeconds = 50 * 60;
+    let studyTimerRunning = false;
+
+    function loadHubDb() {
       try {
-        const raw = localStorage.getItem(STUDY_DB_KEY);
+        const raw = localStorage.getItem(HUB_STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          if (!parsed.subjects || parsed.subjects.length === 0) parsed.subjects = INITIAL_SUBJECTS;
-          if (!parsed.tasks) parsed.tasks = INITIAL_TASKS;
-          if (!parsed.news) parsed.news = INITIAL_NEWS;
-          if (!parsed.chat) parsed.chat = [];
+          if (!parsed.schedule) parsed.schedule = DEFAULT_SCHEDULE;
+          if (!parsed.subjects) parsed.subjects = DEFAULT_SUBJECTS;
+          if (!parsed.tasks) parsed.tasks = DEFAULT_TASKS;
+          if (!parsed.news) parsed.news = DEFAULT_DISCOVER_NEWS;
+          if (!parsed.savedNews) parsed.savedNews = [];
+          if (!parsed.reminders) parsed.reminders = DEFAULT_REMINDERS;
+          if (!parsed.contextMemory) parsed.contextMemory = DEFAULT_CONTEXT_MEMORY;
+          if (!parsed.topChat) parsed.topChat = [];
+          if (!parsed.studyChat) parsed.studyChat = [
+            { role: 'ai', text: 'Olá, Ithan! Estou conectado ao contexto das suas 8 matérias e da sua rotina. Cole avisos do Teams/Moodle, conte o que já concluiu ou informe datas de provas!' }
+          ];
           return parsed;
         }
       } catch (e) {}
       return {
-        subjects: INITIAL_SUBJECTS,
-        tasks: INITIAL_TASKS,
-        news: INITIAL_NEWS,
-        icsUrl: DEFAULT_ICS_URL,
-        chat: [
-          { role: 'ai', text: 'Bom dia, Ithan! Todas as suas 8 matérias e as listas que estavam no seu Notion já foram importadas e ordenadas. Qualquer imprevisto no seu horário ou tarefa nova do Teams/Moodle, basta me falar aqui que eu recalculo sua rota!' }
+        schedule: DEFAULT_SCHEDULE,
+        subjects: DEFAULT_SUBJECTS,
+        tasks: DEFAULT_TASKS,
+        news: DEFAULT_DISCOVER_NEWS,
+        savedNews: [],
+        reminders: DEFAULT_REMINDERS,
+        phone: '',
+        ntfyTopic: '',
+        contextMemory: DEFAULT_CONTEXT_MEMORY,
+        topChat: [],
+        studyChat: [
+          { role: 'ai', text: 'Olá, Ithan! Estou conectado ao contexto das suas 8 matérias e da sua rotina. Cole avisos do Teams/Moodle, conte o que já concluiu ou informe datas de provas!' }
         ]
       };
     }
 
-    function saveState() {
-      localStorage.setItem(STUDY_DB_KEY, JSON.stringify(state));
+    function saveHubDb() {
+      localStorage.setItem(HUB_STORAGE_KEY, JSON.stringify(db));
     }
 
-    // =========================================================================
-    // ALGORITMO DAS 4 ORDENAÇÕES DO SEU NOTION
-    // 1º Prioridade -> 2º Validade -> 3º Status -> 4º Importância do Curso
-    // =========================================================================
-    function getSortedTasks(filterSubjectId = null, includeDone = false) {
-      const prioWeight = { alta: 1, media: 2, baixa: 3 };
-      const impWeight = { alto: 1, medio: 2, baixo: 3 };
-      const statusWeight = { todo: 1, done: 2 };
-
-      const subjMap = {};
-      state.subjects.forEach(s => subjMap[s.id] = s);
-
-      return state.tasks
-        .filter(t => (includeDone || t.status !== 'done') && (!filterSubjectId || t.subjectId === filterSubjectId))
-        .sort((a, b) => {
-          // 1º Status (Não concluídas primeiro)
-          if (statusWeight[a.status] !== statusWeight[b.status]) {
-            return statusWeight[a.status] - statusWeight[b.status];
-          }
-          // 2º Prioridade da Tarefa (Alta -> Média -> Baixa)
-          const pA = prioWeight[a.priority] || 2;
-          const pB = prioWeight[b.priority] || 2;
-          if (pA !== pB) return pA - pB;
-
-          // 3º Validade (Mais antigo / mais próximo de vencer primeiro)
-          const dA = a.due || '9999-12-31';
-          const dB = b.due || '9999-12-31';
-          if (dA !== dB) return dA.localeCompare(dB);
-
-          // 4º Importância da Matéria (Alto -> Médio -> Baixo)
-          const sA = subjMap[a.subjectId];
-          const sB = subjMap[b.subjectId];
-          const iA = sA ? (impWeight[sA.importance] || 2) : 2;
-          const iB = sB ? (impWeight[sB.importance] || 2) : 2;
-          return iA - iB;
-        });
-    }
-
-    // =========================================================================
-    // NAVEGAÇÃO ENTRE SUBPÁGINAS
-    // =========================================================================
-    function switchPage(pageId) {
-      ['morning', 'ai', 'weekly', 'subjects'].forEach(p => {
-        document.getElementById(`page-${p}`).classList.toggle('hidden', p !== pageId);
-        const btn = document.getElementById(`nav-${p}`);
-        if (p === pageId) {
-          btn.classList.remove('text-notion-muted');
-          btn.classList.add('text-indigo-400');
-        } else {
-          btn.classList.remove('text-indigo-400');
-          btn.classList.add('text-notion-muted');
-        }
-      });
-      renderAll();
-    }
-
+    // ===========================================================================
+    // INICIALIZAÇÃO E RENDERIZAÇÃO GERAL
+    // ===========================================================================
     window.addEventListener('DOMContentLoaded', () => {
-      populateSubjectSelect();
-      renderAll();
+      initDaySelectors();
+      injectDailyAutomatedMessages();
+      renderEverything();
     });
 
-    function renderAll() {
-      renderHeaderAndSchedule();
-      renderNewsFeed();
-      renderSingleTaskSpotlight();
-      renderChatMessages();
-      renderWeeklyPage();
-      renderSubjectsPage();
+    function renderEverything() {
+      renderGoogleQuickCards();
+      renderDiscoverFeed();
+      renderTopChatHistory();
+      renderRoutineSchedule();
+      renderStudyFocusSpotlight();
+      renderStudyChat();
+      renderWeeklyTasks();
+      renderSubjectsGrid();
     }
 
-    // =========================================================================
-    // RENDERIZAÇÃO: CABEÇALHO, CALENDÁRIO UFU E JANELAS DO OUTLOOK
-    // =========================================================================
-    function renderHeaderAndSchedule() {
-      const now = new Date();
-      const dayIdx = now.getDay();
-      const sched = WEEKLY_SCHEDULE[dayIdx];
-
-      const formattedDate = now.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
-      document.getElementById('headerDayInfo').textContent = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
-
-      // Cálculo da semana do semestre 2026/2 (01/09/2026 a 19/12/2026)
-      const semStart = new Date('2026-09-01T00:00:00');
-      const diffWeeks = Math.max(1, Math.min(16, Math.ceil((now - semStart) / (1000 * 60 * 60 * 24 * 7))));
-      document.getElementById('semesterBadge').textContent = `Semana ${diffWeeks}/16 • UFU`;
-
-      document.getElementById('freeTimePill').textContent = `⏳ ${sched.totalFreeHours}h livres hoje`;
-
-      const classesEl = document.getElementById('todayClassesList');
-      classesEl.innerHTML = sched.classes.map(c => `<div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span><span>${c}</span></div>`).join('');
-
-      const freeEl = document.getElementById('todayFreeWindowsList');
-      freeEl.innerHTML = sched.freeWindows.map(w => `<div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span><span class="font-semibold text-emerald-300">${w}</span></div>`).join('');
-    }
-
-    // =========================================================================
-    // RENDERIZAÇÃO: FEED DE NOTÍCIAS (3 NÍVEIS DE PRIORIDADE)
-    // =========================================================================
-    function filterNewsCategory(cat) {
-      currentNewsFilter = cat;
-      ['all', 'ufu', 'tech', 'politics'].forEach(c => {
-        const btn = document.getElementById(`feedTab-${c}`);
-        if (c === cat) {
-          btn.className = 'px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white shrink-0';
-        } else {
-          btn.className = 'px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#161616] border border-notion-border text-notion-muted hover:text-white shrink-0';
+    function navigateMainView(viewName) {
+      ['discover', 'routine', 'studies'].forEach(v => {
+        document.getElementById(`view-${v}`).classList.toggle('hidden', v !== viewName);
+        const navBtn = document.getElementById(`bottomNav-${v}`);
+        if (navBtn) {
+          navBtn.className = (v === viewName)
+            ? 'flex flex-col items-center gap-1 text-blue-400'
+            : 'flex flex-col items-center gap-1 text-gdark-muted';
         }
       });
-      renderNewsFeed();
+      renderEverything();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function renderNewsFeed() {
-      const container = document.getElementById('newsFeedContainer');
-      const orderWeight = { ufu: 1, tech: 2, politics: 3 };
-      const items = state.news
-        .filter(n => currentNewsFilter === 'all' || n.category === currentNewsFilter)
-        .sort((a, b) => (orderWeight[a.category] || 9) - (orderWeight[b.category] || 9));
+    function showHelpTooltip(text) {
+      document.getElementById('helpTooltipText').textContent = text;
+      document.getElementById('helpTooltipModal').classList.remove('hidden');
+    }
 
-      container.innerHTML = items.map(n => `
-        <a href="${n.url}" target="_blank" rel="noopener" class="block bg-[#161616] border border-notion-border hover:border-indigo-500/40 rounded-xl p-3 transition">
-          <div class="flex items-center justify-between text-[10px] mb-1">
-            <span class="font-bold uppercase tracking-wider ${n.category === 'ufu' ? 'text-rose-400' : n.category === 'tech' ? 'text-amber-400' : 'text-sky-400'}">${n.badge}</span>
-            <span class="text-notion-muted">${n.source} • ${n.date || ''}</span>
+    // ===========================================================================
+    // 1ª PÁGINA: CARROSSEL RÁPIDO (1º QUADRO "ROTINA" + AULAS DO DIA) & DISCOVER
+    // ===========================================================================
+    function renderGoogleQuickCards() {
+      const row = document.getElementById('googleQuickCardsRow');
+      const todayIdx = new Date().getDay();
+      const todaySched = db.schedule[todayIdx] || db.schedule[1];
+      const pendingCount = db.tasks.filter(t => t.status !== 'done').length;
+
+      document.getElementById('routineCardPendingBadge').textContent = `${pendingCount} pendentes`;
+
+      let cardsHtml = `
+        <!-- 1º QUADRO FIXO: ROTINA -->
+        <div onclick="navigateMainView('routine')" class="min-w-[165px] bg-gradient-to-br from-indigo-900/50 to-gdark-surface border border-indigo-500/40 rounded-2xl p-3.5 cursor-pointer shrink-0 flex flex-col justify-between h-24 shadow-md">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold uppercase tracking-wider text-indigo-300">⚡ Rotina</span>
+            <span class="text-xs bg-indigo-500/30 text-white px-2 py-0.5 rounded-full font-bold">Abrir &rarr;</span>
           </div>
-          <h4 class="text-xs sm:text-sm font-bold text-white leading-snug">${n.title}</h4>
-        </a>
-      `).join('');
+          <div>
+            <div class="text-sm font-extrabold text-white">Acessar Rotina</div>
+            <div class="text-[11px] text-gdark-muted">Estudos • Treino • Dieta</div>
+          </div>
+        </div>
+      `;
+
+      // Quadros seguintes dinâmicos com as janelas livres e aulas do dia
+      (todaySched.freeWindows || []).forEach(win => {
+        cardsHtml += `
+          <div onclick="navigateMainView('studies')" class="min-w-[180px] bg-gdark-surface border border-gdark-border rounded-2xl p-3.5 cursor-pointer shrink-0 flex flex-col justify-between h-24">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-bold text-emerald-400">⏳ Janela Livre</span>
+              <span class="text-[10px] text-gdark-muted">${todaySched.name.split('-')[0]}</span>
+            </div>
+            <div class="text-xs font-bold text-white leading-snug line-clamp-2">${win}</div>
+          </div>
+        `;
+      });
+
+      (todaySched.classes || []).forEach(cls => {
+        cardsHtml += `
+          <div onclick="navigateMainView('routine')" class="min-w-[180px] bg-gdark-surface border border-gdark-border rounded-2xl p-3.5 cursor-pointer shrink-0 flex flex-col justify-between h-24">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-bold text-gdark-muted">📅 Hoje</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-gdark-pill text-gdark-text">Agenda</span>
+            </div>
+            <div class="text-xs font-bold text-white leading-snug line-clamp-2">${cls}</div>
+          </div>
+        `;
+      });
+
+      row.innerHTML = cardsHtml;
     }
 
-    async function fetchLiveFeeds() {
-      const btn = document.getElementById('btnRefreshFeed');
-      btn.textContent = '⏳ Buscando...';
+    function setFeedCategory(cat) {
+      currentFeedCategory = cat;
+      ['all', 'ufu', 'tech', 'politics'].forEach(c => {
+        const btn = document.getElementById(`catBtn-${c}`);
+        if (c === cat) {
+          btn.className = 'px-3.5 py-2 rounded-full text-sm font-semibold bg-gdark-pill border border-blue-500/50 text-white shrink-0';
+        } else {
+          btn.className = 'px-3.5 py-2 rounded-full text-sm font-medium bg-gdark-surface border border-gdark-border text-gdark-text shrink-0';
+        }
+      });
+      renderDiscoverFeed();
+    }
+
+    function renderDiscoverFeed() {
+      const list = document.getElementById('discoverFeedList');
+      const priorityOrder = { ufu: 1, tech: 2, politics: 3 };
+      const filtered = db.news
+        .filter(n => currentFeedCategory === 'all' || n.category === currentFeedCategory)
+        .sort((a, b) => (priorityOrder[a.category] || 9) - (priorityOrder[b.category] || 9));
+
+      list.innerHTML = filtered.map(item => {
+        const isLiked = db.savedNews.some(s => s.id === item.id || s.title === item.title);
+        const catIcon = item.category === 'ufu' ? '📖' : item.category === 'tech' ? '🤖' : '🌐';
+        return `
+          <article class="bg-gdark-card border border-gdark-border rounded-3xl overflow-hidden shadow-lg">
+            <a href="${item.url}" target="_blank" rel="noopener" class="block">
+              <img src="${item.image}" alt="Capa" class="w-full h-52 object-cover bg-neutral-900" onerror="this.src='https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=900&q=80'" />
+              <div class="p-4 pb-2">
+                <h3 class="text-lg font-bold text-white leading-snug">${item.title}</h3>
+              </div>
+            </a>
+            <div class="px-4 pb-3.5 pt-1 flex items-center justify-between text-gdark-muted">
+              <div class="flex items-center gap-2 text-xs font-medium">
+                <span class="w-6 h-6 rounded-full bg-gdark-pill flex items-center justify-center text-sm">${catIcon}</span>
+                <span>${item.source}</span>
+                <span>•</span>
+                <span>${item.time || 'Recente'}</span>
+              </div>
+              <div class="flex items-center gap-4">
+                <button onclick="toggleLikeNews('${item.id}')" class="p-1.5 rounded-full hover:bg-gdark-pill transition text-base" title="Curtir e Salvar Notícia">
+                  ${isLiked ? '❤️' : '🤍'}
+                </button>
+                <button onclick="shareNewsItem('${item.title.replace(/'/g, '')}', '${item.url}')" class="p-1.5 rounded-full hover:bg-gdark-pill transition text-base" title="Compartilhar">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function toggleLikeNews(newsId) {
+      const item = db.news.find(n => n.id === newsId);
+      if (!item) return;
+      const idx = db.savedNews.findIndex(s => s.id === newsId || s.title === item.title);
+      if (idx >= 0) {
+        db.savedNews.splice(idx, 1);
+      } else {
+        db.savedNews.unshift({ ...item, savedAt: new Date().toLocaleDateString('pt-BR') });
+      }
+      saveHubDb();
+      renderDiscoverFeed();
+    }
+
+    function shareNewsItem(title, url) {
+      if (navigator.share) {
+        navigator.share({ title, text: title, url }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(`${title} - ${url}`);
+        alert('Link copiado para a área de transferência!');
+      }
+    }
+
+    async function refreshLiveDiscoverFeed() {
+      const btn = document.getElementById('btnRefreshDiscover');
+      btn.textContent = '⏳';
+      const fallbackImages = {
+        ufu: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=900&q=80',
+        tech: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=900&q=80',
+        politics: 'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=900&q=80'
+      };
       try {
         const queries = [
-          { cat: 'ufu', badge: '🔴 1. UFU & Engenharias', q: 'Universidade+Federal+de+Uberlandia+UFU+engenharia' },
-          { cat: 'tech', badge: '🟡 2. Mecatrônica, IA & Tech', q: 'engenharia+mecatronica+robotica+inteligencia+artificial' },
-          { cat: 'politics', badge: '🔵 3. Política BR & Mundo', q: 'politica+economia+brasil+mundo' }
+          { cat: 'ufu', q: 'Universidade+Federal+de+Uberlandia+UFU+engenharia' },
+          { cat: 'tech', q: 'engenharia+mecatronica+robotica+inteligencia+artificial' },
+          { cat: 'politics', q: 'politica+economia+brasil+mundo' }
         ];
-        const freshNews = [...INITIAL_NEWS.slice(0, 2)];
-
+        const fresh = [DEFAULT_DISCOVER_NEWS[0]];
         for (const item of queries) {
-          const rssUrl = `https://news.google.com/rss/search?q=${item.q}&hl=pt-BR&gl=BR&ceid=BR:pt-419`;
-          const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
-          const res = await fetch(apiUrl);
+          const rss = `https://news.google.com/rss/search?q=${item.q}&hl=pt-BR&gl=BR&ceid=BR:pt-419`;
+          const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rss)}`);
           const data = await res.json();
-          if (data.items && data.items.length > 0) {
-            data.items.slice(0, 2).forEach(art => {
-              freshNews.push({
+          if (data.items) {
+            data.items.slice(0, 2).forEach((art, idx) => {
+              fresh.push({
+                id: 'live_' + item.cat + '_' + idx + '_' + Date.now(),
                 category: item.cat,
-                badge: item.badge,
                 title: art.title,
-                source: art.author || 'Google News RSS',
+                source: art.author || 'Google News',
+                time: 'Hoje',
                 url: art.link,
-                date: new Date(art.pubDate).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+                image: art.thumbnail || fallbackImages[item.cat]
               });
             });
           }
         }
-        state.news = freshNews;
-        saveState();
-        renderNewsFeed();
+        db.news = fresh;
+        saveHubDb();
+        renderDiscoverFeed();
       } catch (e) {
-        alert('Feed atualizado com cache local.');
       } finally {
-        btn.textContent = '🔄 Atualizar Notícias';
+        btn.textContent = '🔄';
       }
     }
 
-    async function summarizeFeedWithAi() {
+    // ===========================================================================
+    // CHAT GERAL DO TOPO + MOTOR DE NOTIFICAÇÕES (WHATSAPP, SMS E APP)
+    // ===========================================================================
+    function toggleQuickTopChat() {
+      document.getElementById('quickTopChatDrawer').classList.toggle('hidden');
+      renderTopChatHistory();
+    }
+
+    function injectDailyAutomatedMessages() {
+      const todayKey = new Date().toISOString().split('T')[0];
+      if (db.lastAutomatedCheckDate === todayKey) return;
+      db.lastAutomatedCheckDate = todayKey;
+
+      const sortedTasks = getSortedStudyTasks();
+      const firstTask = sortedTasks[0] ? sortedTasks[0].title : 'Revisão geral';
+
+      db.topChat.push({
+        role: 'ai',
+        isReminder: true,
+        text: `🔔 **Resumo de Avisos de Hoje:**\n• 🏋️‍♂️ **Treino (06:30):** Escolha seu estilo de treino de hoje.\n• 🥗 **Dieta & Água:** Meta de 140g proteína e 3L de água.\n• 🎯 **Estudo #1:** ${firstTask}`
+      });
+      saveHubDb();
+    }
+
+    function renderTopChatHistory() {
+      const box = document.getElementById('topChatHistory');
+      if (!box) return;
+      box.innerHTML = db.topChat.map(m => {
+        const cleanText = m.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+        const encodedMsg = encodeURIComponent(m.text.replace(/\*\*/g, ''));
+        const phoneDigits = (db.phone || '').replace(/\D/g, '');
+        const waUrl = phoneDigits ? `https://wa.me/${phoneDigits}?text=${encodedMsg}` : `https://wa.me/?text=${encodedMsg}`;
+        const smsUrl = `sms:${phoneDigits}?body=${encodedMsg}`;
+
+        return `
+          <div class="p-3 rounded-2xl ${m.role === 'user' ? 'bg-blue-600 text-white ml-8' : 'bg-gdark-bg border border-gdark-border text-gdark-text mr-4'}">
+            <div class="leading-relaxed">${cleanText}</div>
+            ${m.role === 'ai' ? `
+              <div class="flex items-center gap-2 mt-2 pt-2 border-t border-gdark-border/60 text-[11px]">
+                <a href="${waUrl}" target="_blank" class="px-2.5 py-1 rounded-lg bg-emerald-600/20 text-emerald-300 font-bold">📲 WhatsApp</a>
+                <a href="${smsUrl}" class="px-2.5 py-1 rounded-lg bg-blue-600/20 text-blue-300 font-bold">💬 SMS</a>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+      box.scrollTop = box.scrollHeight;
+    }
+
+    async function sendTopChatMessage() {
+      const input = document.getElementById('topChatInput');
+      const text = input.value.trim();
+      if (!text) return;
+
       const apiKey = localStorage.getItem(API_KEY_STORAGE);
       if (!apiKey) {
-        alert('Configure sua chave de API do Gemini no botão de engrenagem no topo direito.');
-        openSettingsModal();
+        alert('Salve sua chave da API Gemini na engrenagem primeiro.');
+        openGlobalSettings('config');
         return;
       }
-      const box = document.getElementById('aiMorningBriefingBox');
-      const btn = document.getElementById('btnAiBriefing');
-      box.classList.remove('hidden');
-      box.textContent = 'Gerando briefing matinal personalizado com Gemini 3.8 Flash...';
-      btn.textContent = '⏳...';
 
-      const headlines = state.news.map(n => `[${n.badge}] ${n.title}`).join('\n');
-      const prompt = `Você é o assistente matinal de um estudante de Engenharia Mecatrônica da UFU.
-Resuma em 3 tópicos diretos e curtos (1. UFU/Acadêmico, 2. Mecatrônica/IA/Tech, 3. Cenário Político/Econômico) as manchetes abaixo e finalize com 1 frase motivadora para ele cumprir a 1ª janela de estudo do dia:
-${headlines}`;
+      db.topChat.push({ role: 'user', text });
+      input.value = '';
+      renderTopChatHistory();
+
+      const btn = document.getElementById('btnTopChatSend');
+      btn.textContent = '...';
+
+      const prompt = `Contexto do Usuário (NotebookLM / Memória Sincronizada):\n${db.contextMemory}\n\nPergunta do usuário no chat rápido da página principal: "${text}"\nResponda de forma direta, útil e concisa.`;
 
       try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${DEFAULT_MODEL}:generateContent?key=${encodeURIComponent(apiKey)}`, {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(apiKey)}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
           body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
         });
         const data = await res.json();
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta.';
-        box.innerHTML = text.replace(/\n/g, '<br>');
+        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sem resposta.';
+        db.topChat.push({ role: 'ai', text: reply });
+        saveHubDb();
+        renderTopChatHistory();
       } catch (e) {
-        box.textContent = 'Erro ao resumir: ' + e.message;
+        db.topChat.push({ role: 'ai', text: 'Erro de conexão com a API: ' + e.message });
+        renderTopChatHistory();
       } finally {
-        btn.textContent = '✨ Resumo IA';
+        btn.textContent = 'Enviar';
       }
     }
 
-    // =========================================================================
-    // SUBPÁGINA 2: FOCO ÚNICO (1 TAREFA POR VEZ) + INGESTÃO + CHAT IA
-    // =========================================================================
-    function renderSingleTaskSpotlight() {
-      const sorted = getSortedTasks(null, false);
-      const container = document.getElementById('singleTaskSpotlight');
-      const daySched = WEEKLY_SCHEDULE[new Date().getDay()];
-      document.getElementById('activeTaskWindowTag').textContent = daySched.freeWindows[0] || 'Janela Livre';
+    // ===========================================================================
+    // 2ª PÁGINA: ROTINA (AGENDA E JANELAS LIVRES TOTALMENTE EDITÁVEIS)
+    // ===========================================================================
+    function initDaySelectors() {
+      const todayIdx = new Date().getDay();
+      const sel1 = document.getElementById('routineDaySelector');
+      const sel2 = document.getElementById('editSchedDaySelect');
+      const daysOrder = [1, 2, 3, 4, 5, 6, 0];
+      const optionsHtml = daysOrder.map(d => `<option value="${d}" ${d === todayIdx ? 'selected' : ''}>${db.schedule[d].name}</option>`).join('');
+      if (sel1) sel1.innerHTML = optionsHtml;
+      if (sel2) sel2.innerHTML = optionsHtml;
+    }
 
+    function renderRoutineSchedule() {
+      const sel = document.getElementById('routineDaySelector');
+      const dayIdx = sel ? Number(sel.value) : new Date().getDay();
+      const dayData = db.schedule[dayIdx] || db.schedule[1];
+
+      const freeBox = document.getElementById('routineFreeWindowsBox');
+      freeBox.innerHTML = (dayData.freeWindows || []).map(w => `
+        <div class="bg-gdark-bg border border-emerald-500/30 rounded-2xl px-4 py-3 flex items-center justify-between">
+          <span class="text-sm font-bold text-white">${w}</span>
+          <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300">Livre</span>
+        </div>
+      `).join('');
+
+      const classesBox = document.getElementById('routineClassesTimeline');
+      classesBox.innerHTML = (dayData.classes || []).map(c => `
+        <div class="bg-gdark-bg border border-gdark-border rounded-2xl px-4 py-3 flex items-center justify-between">
+          <span class="text-sm font-semibold text-gdark-text">${c}</span>
+        </div>
+      `).join('');
+    }
+
+    function openScheduleEditorModal() {
+      document.getElementById('editSchedDaySelect').value = document.getElementById('routineDaySelector').value;
+      loadDayIntoScheduleEditor();
+      document.getElementById('scheduleEditorModal').classList.remove('hidden');
+    }
+
+    function closeScheduleEditorModal() {
+      document.getElementById('scheduleEditorModal').classList.add('hidden');
+    }
+
+    function loadDayIntoScheduleEditor() {
+      const dayIdx = Number(document.getElementById('editSchedDaySelect').value);
+      const dayData = db.schedule[dayIdx];
+      document.getElementById('editSchedFreeWindows').value = (dayData.freeWindows || []).join('\n');
+      document.getElementById('editSchedClasses').value = (dayData.classes || []).join('\n');
+    }
+
+    function saveScheduleEditorChanges() {
+      const dayIdx = Number(document.getElementById('editSchedDaySelect').value);
+      const freeLines = document.getElementById('editSchedFreeWindows').value.split('\n').map(s => s.trim()).filter(Boolean);
+      const classLines = document.getElementById('editSchedClasses').value.split('\n').map(s => s.trim()).filter(Boolean);
+
+      db.schedule[dayIdx].freeWindows = freeLines;
+      db.schedule[dayIdx].classes = classLines;
+      saveHubDb();
+      closeScheduleEditorModal();
+      renderEverything();
+    }
+
+    // ===========================================================================
+    // 3ª PÁGINA: ESTUDOS (FOCO 1 POR VEZ + ASSISTENTE DE ESTUDOS + SEMANA + 8 MATÉRIAS)
+    // ===========================================================================
+    function switchStudyTab(tabId) {
+      ['focus', 'weekly', 'subjects'].forEach(t => {
+        document.getElementById(`studySub-${t}`).classList.toggle('hidden', t !== tabId);
+        const btn = document.getElementById(`studyTabBtn-${t}`);
+        btn.className = (t === tabId)
+          ? 'px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white'
+          : 'px-3 py-1.5 rounded-xl text-xs font-bold text-gdark-muted';
+      });
+      renderEverything();
+    }
+
+    function toggleStudyModeMenu() {
+      document.getElementById('studyModeDropdown').classList.toggle('hidden');
+    }
+
+    function setStudyExecutionMode(mode) {
+      currentStudyMode = mode;
+      document.getElementById('studyModeDropdown').classList.add('hidden');
+      const badge = document.getElementById('studyModeBadgeTitle');
+      if (mode === 'single') badge.textContent = '🎯 Modo de Execução Única';
+      if (mode === 'exam') badge.textContent = '🔥 Modo Véspera de Prova';
+      if (mode === 'recovery') badge.textContent = '⚠️ Modo Recuperação (Fim de Semana)';
+      renderStudyFocusSpotlight();
+    }
+
+    function getSortedStudyTasks(filterSubj = null, includeDone = false) {
+      const pWeight = { alta: 1, media: 2, baixa: 3 };
+      const iWeight = { alto: 1, medio: 2, baixo: 3 };
+      const sMap = {};
+      db.subjects.forEach(s => sMap[s.id] = s);
+
+      return db.tasks
+        .filter(t => (includeDone || t.status !== 'done') && (!filterSubj || t.subjectId === filterSubj))
+        .sort((a, b) => {
+          if (a.status !== b.status) return a.status === 'todo' ? -1 : 1;
+          if ((pWeight[a.priority] || 2) !== (pWeight[b.priority] || 2)) {
+            return (pWeight[a.priority] || 2) - (pWeight[b.priority] || 2);
+          }
+          if ((a.due || '9999') !== (b.due || '9999')) {
+            return (a.due || '9999').localeCompare(b.due || '9999');
+          }
+          const impA = iWeight[sMap[a.subjectId]?.importance] || 2;
+          const impB = iWeight[sMap[b.subjectId]?.importance] || 2;
+          return impA - impB;
+        });
+    }
+
+    function renderStudyFocusSpotlight() {
+      const sorted = getSortedStudyTasks(null, false);
+      const box = document.getElementById('spotlightTaskContainer');
       if (sorted.length === 0) {
-        container.innerHTML = `
-          <div class="text-center py-6 space-y-2">
-            <div class="text-2xl">🎉</div>
-            <h3 class="text-base font-bold text-emerald-400">Todas as tarefas da fila estão concluídas!</h3>
-            <p class="text-xs text-notion-muted">Seu fim de semana está 100% livre e garantido.</p>
+        box.innerHTML = `
+          <div class="bg-gdark-bg border border-emerald-500/30 rounded-2xl p-6 text-center space-y-2">
+            <div class="text-3xl">🎉</div>
+            <div class="text-lg font-bold text-emerald-400">Fila de Estudos Zerada!</div>
+            <div class="text-xs text-gdark-muted">Fim de semana livre garantido.</div>
           </div>
         `;
         return;
       }
 
-      const topTask = sorted[0];
-      const subj = state.subjects.find(s => s.id === topTask.subjectId) || { name: 'Geral', prof: '', importance: 'medio', difficulty: 'media' };
+      const task = sorted[0];
+      const subj = db.subjects.find(s => s.id === task.subjectId) || { name: 'Matéria', prof: '' };
 
-      container.innerHTML = `
-        <div class="bg-[#141414] border border-indigo-500/40 rounded-xl p-4 space-y-3">
+      box.innerHTML = `
+        <div class="bg-gdark-bg border border-gdark-border rounded-2xl p-4 space-y-3.5">
           <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-extrabold px-2.5 py-0.5 rounded bg-indigo-600 text-white">${subj.name}</span>
-              <span class="text-[11px] text-notion-muted">Prof(a). ${subj.prof}</span>
-            </div>
-            <div class="flex items-center gap-1.5 text-[10px] font-bold uppercase">
-              <span class="px-2 py-0.5 rounded ${topTask.priority === 'alta' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'}">Prioridade ${topTask.priority}</span>
-              <span class="px-2 py-0.5 rounded bg-notion-card border border-notion-border text-notion-text">Prazo: ${formatDateBR(topTask.due)}</span>
-              <span class="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300">⏱ ${topTask.estMins || 50} min</span>
+            <span class="text-xs font-extrabold px-3 py-1 rounded-lg bg-indigo-600 text-white">${subj.name} • Prof(a). ${subj.prof}</span>
+            <div class="flex items-center gap-2 text-xs font-bold">
+              <span class="px-2.5 py-0.5 rounded-lg ${task.priority === 'alta' ? 'bg-rose-500/20 text-rose-300' : 'bg-amber-500/20 text-amber-300'} uppercase">${task.priority}</span>
+              <span class="px-2.5 py-0.5 rounded-lg bg-gdark-pill text-gdark-text">📅 ${formatBrDate(task.due)}</span>
+              <span class="px-2.5 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300">${task.estMins || 50} min</span>
             </div>
           </div>
 
-          <h2 class="text-base sm:text-lg font-extrabold text-white leading-snug">${topTask.title}</h2>
+          <h3 class="text-lg sm:text-xl font-extrabold text-white leading-snug">${task.title}</h3>
 
-          <p class="text-xs text-notion-muted">
-            📌 <strong>Regra de Execução:</strong> Ignore as outras ${sorted.length - 1} tarefas da fila agora. Foque exclusivamente nesta atividade pelos próximos ${topTask.estMins || 50} minutos.
-          </p>
-
-          <div class="flex flex-wrap gap-2 pt-1">
-            <button onclick="completeTask('${topTask.id}')" class="flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition">
-              ✓ Concluir e Liberar Próxima Tarefa
+          <div class="flex gap-2 pt-1">
+            <button onclick="toggleTaskDone('${task.id}')" class="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition">
+              ✓ Concluir Tarefa
             </button>
-            <button onclick="postponeTopTask('${topTask.id}')" class="py-2.5 px-3 rounded-xl bg-notion-hover border border-notion-border text-xs font-semibold text-notion-muted hover:text-white transition">
-              Adiar +1 dia
+            <button onclick="postponeTaskOneDay('${task.id}')" class="px-4 py-3 rounded-xl bg-gdark-pill text-xs font-bold text-gdark-muted hover:text-white">
+              +1 Dia
             </button>
           </div>
         </div>
       `;
     }
 
-    function completeTask(taskId) {
-      const t = state.tasks.find(x => x.id === taskId);
+    function toggleTaskDone(taskId) {
+      const t = db.tasks.find(x => x.id === taskId);
       if (t) {
         t.status = (t.status === 'done') ? 'todo' : 'done';
-        saveState();
-        renderAll();
+        saveHubDb();
+        renderEverything();
       }
     }
 
-    function postponeTopTask(taskId) {
-      const t = state.tasks.find(x => x.id === taskId);
+    function postponeTaskOneDay(taskId) {
+      const t = db.tasks.find(x => x.id === taskId);
       if (t) {
-        const d = new Date((t.due || getTodayISO()) + 'T12:00:00');
+        const d = new Date((t.due || new Date().toISOString().split('T')[0]) + 'T12:00:00');
         d.setDate(d.getDate() + 1);
         t.due = d.toISOString().split('T')[0];
-        t.priority = 'media';
-        saveState();
-        renderAll();
+        saveHubDb();
+        renderEverything();
       }
     }
 
-    // TIMER POMODORO
-    function toggleFocusTimer() {
-      const btn = document.getElementById('btnTimerToggle');
-      const status = document.getElementById('timerStatusText');
-      if (timerRunning) {
-        clearInterval(timerInterval);
-        timerRunning = false;
+    // CRONÔMETRO DE ESTUDO
+    function toggleStudyTimer() {
+      const btn = document.getElementById('btnStudyTimer');
+      if (studyTimerRunning) {
+        clearInterval(studyTimerInterval);
+        studyTimerRunning = false;
         btn.textContent = '▶ Retomar';
-        status.textContent = 'Pausado';
       } else {
-        timerRunning = true;
+        studyTimerRunning = true;
         btn.textContent = '⏸ Pausar';
-        status.textContent = 'Em foco total — sem distrações!';
-        timerInterval = setInterval(() => {
-          if (timerSecondsLeft > 0) {
-            timerSecondsLeft--;
-            updateTimerDisplay();
+        studyTimerInterval = setInterval(() => {
+          if (studyTimerSeconds > 0) {
+            studyTimerSeconds--;
+            const m = String(Math.floor(studyTimerSeconds / 60)).padStart(2, '0');
+            const s = String(studyTimerSeconds % 60).padStart(2, '0');
+            document.getElementById('focusTimerDisplay').textContent = `${m}:${s}`;
           } else {
-            clearInterval(timerInterval);
-            timerRunning = false;
-            alert('Bloco de foco concluído! Marque a tarefa como feita ou descanse 10 min.');
+            clearInterval(studyTimerInterval);
+            studyTimerRunning = false;
+            alert('Bloco de foco finalizado!');
           }
         }, 1000);
       }
     }
 
-    function resetFocusTimer() {
-      clearInterval(timerInterval);
-      timerRunning = false;
-      const sorted = getSortedTasks(null, false);
-      const mins = sorted[0]?.estMins || 50;
-      timerSecondsLeft = mins * 60;
-      updateTimerDisplay();
-      document.getElementById('btnTimerToggle').textContent = '▶ Iniciar Foco';
-      document.getElementById('timerStatusText').textContent = 'Pronto para iniciar bloco';
+    function resetStudyTimer() {
+      clearInterval(studyTimerInterval);
+      studyTimerRunning = false;
+      const top = getSortedStudyTasks()[0];
+      studyTimerSeconds = (top?.estMins || 50) * 60;
+      const m = String(Math.floor(studyTimerSeconds / 60)).padStart(2, '0');
+      document.getElementById('focusTimerDisplay').textContent = `${m}:00`;
+      document.getElementById('btnStudyTimer').textContent = '▶ Iniciar';
     }
 
-    function updateTimerDisplay() {
-      const m = String(Math.floor(timerSecondsLeft / 60)).padStart(2, '0');
-      const s = String(timerSecondsLeft % 60).padStart(2, '0');
-      document.getElementById('timerDisplay').textContent = `${m}:${s}`;
-    }
-
-    // INGESTÃO DE AVISOS (TEAMS / MOODLE / AULAS) VIA GEMINI
-    async function processIngestedInfoWithAi() {
-      const rawText = document.getElementById('rawInfoInput').value.trim();
-      if (!rawText) {
-        alert('Cole algum aviso do Teams, Moodle ou anotação da aula primeiro.');
-        return;
-      }
-
-      const apiKey = localStorage.getItem(API_KEY_STORAGE);
-      if (!apiKey) {
-        alert('Configure sua chave de API do Gemini primeiro (ícone de engrenagem no topo).');
-        openSettingsModal();
-        return;
-      }
-
-      const btn = document.getElementById('btnIngestInfo');
-      btn.textContent = '⏳ Processando com Gemini 3.8 Flash...';
-
-      const prompt = `Você é o motor organizador acadêmico do Ithan (Engenharia Mecatrônica UFU).
-Hoje é ${getTodayISO()}.
-Matérias disponíveis (IDs exatos):
-- algoritmos (Algoritmos - Prof Rita)
-- calculo2 (Cálculo 2 - Prof Lúcia)
-- fisica1 (Física 1 - Prof Adamo)
-- algebralinear (Álgebra Linear - Prof Giovanny)
-- estatistica (Estatística - Prof Giovanny)
-- geometria (Geometria Analítica - Prof Marisa)
-- labfisica (Lab Física - Prof Acácio)
-- seguranca (Segurança do Trabalho - Prof João Cícero)
-
-Texto colado pelo aluno: "${rawText}"
-
-Extraia novas tarefas/listas e anotações de aula contidas nesse texto e retorne EXCLUSIVAMENTE um JSON válido neste formato:
-{
-  "newTasks": [
-    { "subjectId": "calculo2", "title": "Descrição clara da tarefa", "priority": "alta", "due": "2026-10-25", "estMins": 50 }
-  ],
-  "classNotes": [
-    { "subjectId": "fisica1", "note": "Resumo do que foi visto na aula" }
-  ],
-  "coachMessage": "Mensagem direta dizendo o que foi atualizado e qual deve ser o foco imediato dele hoje."
-}`;
-
-      try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${DEFAULT_MODEL}:generateContent?key=${encodeURIComponent(apiKey)}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.2, responseMimeType: 'application/json' }
-          })
-        });
-        const data = await res.json();
-        if (data.error) throw new Error(data.error.message);
-
-        const rawJson = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-        const parsed = JSON.parse(rawJson.replace(/```json|```/g, '').trim());
-
-        if (Array.isArray(parsed.newTasks)) {
-          parsed.newTasks.forEach(nt => {
-            state.tasks.push({
-              id: 't_' + Date.now() + Math.random().toString(36).slice(2, 6),
-              subjectId: nt.subjectId || 'algoritmos',
-              title: nt.title || 'Nova tarefa',
-              priority: nt.priority || 'media',
-              due: nt.due || getTodayISO(),
-              status: 'todo',
-              estMins: Number(nt.estMins) || 50
-            });
-          });
-        }
-
-        if (Array.isArray(parsed.classNotes)) {
-          parsed.classNotes.forEach(cn => {
-            const subj = state.subjects.find(s => s.id === cn.subjectId);
-            if (subj && cn.note) subj.notes.push(cn.note);
-          });
-        }
-
-        if (parsed.coachMessage) {
-          state.chat.push({ role: 'ai', text: `✅ Sistema atualizado! ${parsed.coachMessage}` });
-        }
-
-        document.getElementById('rawInfoInput').value = '';
-        saveState();
-        renderAll();
-      } catch (e) {
-        alert('Erro ao processar texto: ' + e.message);
-      } finally {
-        btn.textContent = '⚡ Atualizar Sistema & Recalcular Rota';
-      }
-    }
-
-    // CHAT INTERATIVO COM CAPACIDADE DE ALTERAR TAREFAS E PRAZOS
-    function renderChatMessages() {
-      const box = document.getElementById('aiChatMessages');
-      box.innerHTML = state.chat.map(m => `
+    // ASSISTENTE DE ESTUDOS UNIFICADO (INTERPRETA AVISOS, PROVAS, TAREFAS FEITAS E IMPREVISTOS)
+    function renderStudyChat() {
+      const box = document.getElementById('studyChatMessages');
+      if (!box) return;
+      box.innerHTML = db.studyChat.map(m => `
         <div class="flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}">
-          <div class="max-w-[85%] rounded-2xl px-3.5 py-2.5 leading-relaxed ${
-            m.role === 'user'
-              ? 'bg-indigo-600 text-white'
-              : 'bg-[#141414] border border-notion-border text-notion-text'
+          <div class="max-w-[85%] rounded-2xl px-4 py-2.5 leading-relaxed ${
+            m.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-gdark-bg border border-gdark-border text-gdark-text'
           }">
             ${m.text.replace(/\n/g, '<br>')}
           </div>
@@ -972,364 +1316,418 @@ Extraia novas tarefas/listas e anotações de aula contidas nesse texto e retorn
       box.scrollTop = box.scrollHeight;
     }
 
-    function clearChatHistory() {
-      state.chat = [{ role: 'ai', text: 'Histórico limpo! Como quer ajustar sua tarefa atual ou seus prazos?' }];
-      saveState();
-      renderChatMessages();
+    function clearStudyChat() {
+      db.studyChat = [{ role: 'ai', text: 'Chat limpo! Mande qualquer aviso de professor, data de prova ou ajuste do dia.' }];
+      saveHubDb();
+      renderStudyChat();
     }
 
-    async function sendAiChatMessage() {
-      const input = document.getElementById('aiChatInput');
-      const userMsg = input.value.trim();
-      if (!userMsg) return;
+    async function sendStudyAssistantMessage() {
+      const input = document.getElementById('studyChatInput');
+      const userText = input.value.trim();
+      if (!userText) return;
 
       const apiKey = localStorage.getItem(API_KEY_STORAGE);
       if (!apiKey) {
-        alert('Salve sua chave de API do Gemini primeiro.');
-        openSettingsModal();
+        alert('Configure sua chave da API Gemini na engrenagem primeiro.');
+        openGlobalSettings('config');
         return;
       }
 
-      state.chat.push({ role: 'user', text: userMsg });
+      db.studyChat.push({ role: 'user', text: userText });
       input.value = '';
-      renderChatMessages();
+      renderStudyChat();
 
-      const btn = document.getElementById('btnSendChat');
+      const btn = document.getElementById('btnStudyChatSend');
       btn.textContent = '...';
 
-      const currentQueue = getSortedTasks(null, false).slice(0, 8);
-      const daySched = WEEKLY_SCHEDULE[new Date().getDay()];
+      const prompt = `Você é o Assistente de Estudos IA do Ithan (Engenharia Mecatrônica UFU).
+Memória Sincronizada (NotebookLM / Contexto):
+${db.contextMemory}
 
-      const systemPrompt = `Você é o Mentor Acadêmico IA do Ithan (Engenharia Mecatrônica UFU).
-Data de hoje: ${getTodayISO()} (${daySched.name}).
-Janelas livres dele hoje: ${daySched.freeWindows.join(' | ')}.
-Fila atual das principais tarefas pendentes (em ordem de prioridade):
-${JSON.stringify(currentQueue)}
+Matérias (IDs): algoritmos, calculo2, fisica1, algebralinear, estatistica, geometria, labfisica, seguranca.
+Fila atual de tarefas:
+${JSON.stringify(db.tasks)}
 
-O aluno disse no chat: "${userMsg}"
+Mensagem do aluno (pode ser aviso colado do Teams/Moodle, aviso de que já fez uma tarefa, nova data de prova ou imprevisto):
+"${userText}"
 
-Você pode modificar tarefas existentes (mudar prazo, prioridade, tempo estimado, título ou colocar uma tarefa específica no topo com prioridade "alta" e data de hoje), criar uma nova tarefa ou marcar como concluída.
-Retorne EXCLUSIVAMENTE um JSON válido com esta estrutura:
+Atualize o sistema automaticamente e retorne EXCLUSIVAMENTE um JSON válido neste formato:
 {
-  "reply": "Sua resposta conversacional, objetiva e prática para o aluno explicando o ajuste feito.",
-  "updates": [
-    { "id": "id_da_tarefa_existente", "priority": "alta", "due": "2026-10-18", "estMins": 40, "title": "Novo título opcional", "status": "todo" }
+  "reply": "Resposta curta e direta confirmando as alterações feitas.",
+  "createTasks": [
+    { "subjectId": "calculo2", "title": "Título da tarefa ou Prova", "priority": "alta", "due": "2026-10-25", "estMins": 50 }
   ],
-  "create": [
-    { "subjectId": "calculo2", "title": "Nova tarefa se pedida", "priority": "alta", "due": "2026-10-18", "estMins": 45 }
+  "updateTasks": [
+    { "id": "t1", "status": "done", "priority": "alta", "due": "2026-10-21", "estMins": 45 }
+  ],
+  "classNotes": [
+    { "subjectId": "geometria", "note": "Tópico anotado" }
   ]
 }`;
 
       try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${DEFAULT_MODEL}:generateContent?key=${encodeURIComponent(apiKey)}`, {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(apiKey)}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
           body: JSON.stringify({
-            contents: [{ parts: [{ text: systemPrompt }] }],
+            contents: [{ parts: [{ text: prompt }] }],
             generationConfig: { temperature: 0.2, responseMimeType: 'application/json' }
           })
         });
         const data = await res.json();
-        if (data.error) throw new Error(data.error.message);
+        const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+        const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
 
-        const rawJson = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-        const parsed = JSON.parse(rawJson.replace(/```json|```/g, '').trim());
-
-        if (Array.isArray(parsed.updates)) {
-          parsed.updates.forEach(up => {
-            const t = state.tasks.find(x => x.id === up.id);
-            if (t) {
-              if (up.priority) t.priority = up.priority;
-              if (up.due) t.due = up.due;
-              if (up.estMins) t.estMins = Number(up.estMins);
-              if (up.title) t.title = up.title;
-              if (up.status) t.status = up.status;
-            }
-          });
-        }
-
-        if (Array.isArray(parsed.create)) {
-          parsed.create.forEach(nt => {
-            state.tasks.push({
+        if (Array.isArray(parsed.createTasks)) {
+          parsed.createTasks.forEach(ct => {
+            db.tasks.push({
               id: 't_' + Date.now() + Math.random().toString(36).slice(2, 5),
-              subjectId: nt.subjectId || 'algoritmos',
-              title: nt.title,
-              priority: nt.priority || 'alta',
-              due: nt.due || getTodayISO(),
+              subjectId: ct.subjectId || 'algoritmos',
+              title: ct.title,
+              priority: ct.priority || 'alta',
+              due: ct.due || new Date().toISOString().split('T')[0],
               status: 'todo',
-              estMins: Number(nt.estMins) || 45
+              estMins: Number(ct.estMins) || 50
             });
           });
         }
 
-        state.chat.push({ role: 'ai', text: parsed.reply || 'Ajuste realizado na sua fila!' });
-        saveState();
-        renderAll();
+        if (Array.isArray(parsed.updateTasks)) {
+          parsed.updateTasks.forEach(ut => {
+            const t = db.tasks.find(x => x.id === ut.id);
+            if (t) {
+              if (ut.status) t.status = ut.status;
+              if (ut.priority) t.priority = ut.priority;
+              if (ut.due) t.due = ut.due;
+              if (ut.estMins) t.estMins = Number(ut.estMins);
+            }
+          });
+        }
+
+        if (Array.isArray(parsed.classNotes)) {
+          parsed.classNotes.forEach(cn => {
+            const s = db.subjects.find(x => x.id === cn.subjectId);
+            if (s && cn.note) s.notes.push(cn.note);
+          });
+        }
+
+        db.studyChat.push({ role: 'ai', text: parsed.reply || 'Sistema recalculado!' });
+        saveHubDb();
+        renderEverything();
       } catch (e) {
-        state.chat.push({ role: 'ai', text: 'Erro ao processar ajuste: ' + e.message });
-        renderChatMessages();
+        db.studyChat.push({ role: 'ai', text: 'Erro ao processar: ' + e.message });
+        renderStudyChat();
       } finally {
         btn.textContent = 'Enviar';
       }
     }
 
-    // =========================================================================
-    // SUBPÁGINA 3: PAINEL DA SEMANA & PROTOCOLO DE FIM DE SEMANA
-    // =========================================================================
-    function renderWeeklyPage() {
-      const allTasks = state.tasks;
-      const doneCount = allTasks.filter(t => t.status === 'done').length;
-      const totalCount = Math.max(1, allTasks.length);
-      const pct = Math.round((doneCount / totalCount) * 100);
+    // ===========================================================================
+    // SUBPÁGINA SEMANA (COM BOTÃO CONCLUÍDO, MENU ☰ E CORES MANTIDAS)
+    // ===========================================================================
+    function toggleWeeklyMenu() {
+      document.getElementById('weeklyConfigDropdown').classList.toggle('hidden');
+    }
 
-      document.getElementById('weeklyCompletionBar').style.width = `${pct}%`;
+    function toggleShowCompletedWeekly() {
+      showCompletedWeekly = !showCompletedWeekly;
+      renderWeeklyTasks();
+    }
 
-      const highPending = allTasks.filter(t => t.status !== 'done' && t.priority === 'alta').length;
-      const badge = document.getElementById('weekendStatusBadge');
-      const desc = document.getElementById('weekendStatusDesc');
-
+    function renderWeeklyTasks() {
+      const highPending = db.tasks.filter(t => t.status !== 'done' && t.priority === 'alta').length;
+      const pill = document.getElementById('weekendStatusPill');
       if (highPending === 0) {
-        badge.textContent = '🟢 Sábado & Domingo Livres';
-        badge.className = 'text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
-        desc.textContent = 'Nenhuma tarefa de prioridade Alta pendente! Continue mantendo o ritmo nas janelas de segunda a sexta para garantir o descanso total no fim de semana.';
+        pill.textContent = '🟢 FDS Livre';
+        pill.className = 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300';
       } else {
-        badge.textContent = `⚠️ ${highPending} Prioridade(s) Alta(s) Pendente(s)`;
-        badge.className = 'text-xs font-bold px-2.5 py-1 rounded-lg bg-rose-500/20 text-rose-300 border border-rose-500/30';
-        desc.textContent = `Você possui ${highPending} tarefa(s) de Prioridade Alta na fila. Se não forem concluídas nas janelas livres até sexta-feira às 23:30, o Sábado entrará automaticamente em Modo Recuperação (2 blocos obrigatórios antes do descanso).`;
+        pill.textContent = `⚠️ ${highPending} Alta(s)`;
+        pill.className = 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300';
       }
 
-      const sorted = getSortedTasks(null, true);
-      const queueEl = document.getElementById('weeklyPriorityQueue');
-      queueEl.innerHTML = sorted.map((t, index) => {
-        const subj = state.subjects.find(s => s.id === t.subjectId) || { name: 'Geral' };
+      const list = document.getElementById('weeklyTasksList');
+      const tasks = getSortedStudyTasks(null, showCompletedWeekly);
+
+      list.innerHTML = tasks.map((t, idx) => {
+        const subj = db.subjects.find(s => s.id === t.subjectId) || { name: 'Geral' };
         const isDone = t.status === 'done';
         return `
-          <div class="flex items-center justify-between p-3 rounded-xl border transition ${
-            isDone ? 'bg-[#141414]/60 border-notion-border opacity-60' : index === 0 ? 'bg-indigo-950/25 border-indigo-500/40' : 'bg-[#161616] border-notion-border'
+          <div class="p-3.5 rounded-2xl border flex items-center justify-between gap-3 ${
+            isDone ? 'bg-gdark-bg/50 border-gdark-border opacity-60' : idx === 0 ? 'bg-indigo-950/30 border-indigo-500/50' : 'bg-gdark-bg border-gdark-border'
           }">
-            <div class="flex items-start gap-3">
-              <input type="checkbox" ${isDone ? 'checked' : ''} onchange="completeTask('${t.id}')" class="mt-1 w-4 h-4 rounded text-indigo-500 cursor-pointer" />
-              <div>
-                <div class="flex flex-wrap items-center gap-1.5">
-                  ${index === 0 && !isDone ? '<span class="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-indigo-600 text-white">Foco #1</span>' : ''}
-                  <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-notion-card border border-notion-border text-indigo-300">${subj.name}</span>
-                  <span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${
-                    t.priority === 'alta' ? 'text-rose-400 bg-rose-500/10' : t.priority === 'media' ? 'text-amber-400 bg-amber-500/10' : 'text-sky-400 bg-sky-500/10'
-                  }">${t.priority}</span>
-                  <span class="text-[10px] text-notion-muted">Prazo: ${formatDateBR(t.due)} • ${t.estMins || 50} min</span>
-                </div>
-                <div class="text-xs font-bold text-white mt-1 ${isDone ? 'line-through text-notion-muted' : ''}">${t.title}</div>
+            <div class="space-y-1">
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="text-xs font-bold px-2 py-0.5 rounded-lg bg-gdark-surface border border-gdark-border text-indigo-300">${subj.name}</span>
+                <span class="text-xs font-extrabold uppercase px-2 py-0.5 rounded-lg ${
+                  t.priority === 'alta' ? 'text-rose-400 bg-rose-500/15' : t.priority === 'media' ? 'text-amber-400 bg-amber-500/15' : 'text-sky-400 bg-sky-500/15'
+                }">${t.priority}</span>
+                <span class="text-xs text-gdark-muted">📅 ${formatBrDate(t.due)} • ${t.estMins || 50}m</span>
               </div>
+              <div class="text-sm font-bold text-white ${isDone ? 'line-through text-gdark-muted' : ''}">${t.title}</div>
             </div>
-            <button onclick="deleteTask('${t.id}')" class="text-notion-muted hover:text-rose-400 px-2 text-sm">&times;</button>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button onclick="toggleTaskDone('${t.id}')" class="px-3 py-1.5 rounded-xl font-bold text-xs ${
+                isDone ? 'bg-gdark-pill text-gdark-muted' : 'bg-emerald-600 text-white'
+              }">
+                ${isDone ? 'Feito ✓' : 'Concluir'}
+              </button>
+              <button onclick="deleteStudyTask('${t.id}')" class="p-1.5 text-gdark-muted hover:text-rose-400 text-base">&times;</button>
+            </div>
           </div>
         `;
       }).join('');
     }
 
-    function deleteTask(taskId) {
-      state.tasks = state.tasks.filter(t => t.id !== taskId);
-      saveState();
-      renderAll();
+    function deleteStudyTask(id) {
+      db.tasks = db.tasks.filter(t => t.id !== id);
+      saveHubDb();
+      renderEverything();
     }
 
-    // =========================================================================
-    // SUBPÁGINA 4: AS 8 MATÉRIAS E SUBPÁGINA INTERNA DE CADA MATÉRIA
-    // =========================================================================
-    function renderSubjectsPage() {
-      if (currentOpenSubjectId) {
-        document.getElementById('subjectsGridView').classList.add('hidden');
-        document.getElementById('subjectDetailView').classList.remove('hidden');
-        renderSubjectDetail(currentOpenSubjectId);
-      } else {
-        document.getElementById('subjectsGridView').classList.remove('hidden');
-        document.getElementById('subjectDetailView').classList.add('hidden');
-
-        const grid = document.getElementById('subjectsCardsGrid');
-        grid.innerHTML = state.subjects.map(s => {
-          const pending = state.tasks.filter(t => t.subjectId === s.id && t.status !== 'done').length;
-          return `
-            <div onclick="openSubjectDetail('${s.id}')" class="bg-notion-card border border-notion-border hover:border-indigo-500/50 rounded-2xl p-4 cursor-pointer transition space-y-2.5">
-              <div class="flex items-center justify-between">
-                <h3 class="text-sm font-extrabold text-white">${s.name}</h3>
-                <span class="text-[10px] font-bold px-2 py-0.5 rounded ${pending > 0 ? 'bg-amber-500/20 text-amber-300' : 'bg-emerald-500/20 text-emerald-300'}">
-                  ${pending} pendente(s)
-                </span>
-              </div>
-              <div class="text-xs text-notion-muted">Prof(a): <strong class="text-notion-text">${s.prof}</strong> • Carga: ${s.workload}h</div>
-              <div class="text-[11px] bg-[#161616] border border-notion-border rounded-lg px-2.5 py-1.5 text-notion-text">
-                📊 <strong>Provas:</strong> ${s.exams}
-              </div>
-              <div class="flex items-center justify-between text-[10px] pt-1">
-                <span class="uppercase font-bold ${s.importance === 'alto' ? 'text-emerald-400' : s.importance === 'medio' ? 'text-amber-400' : 'text-rose-400'}">Importância: ${s.importance}</span>
-                <span class="uppercase font-bold text-purple-300">Dificuldade: ${s.difficulty}</span>
-              </div>
-            </div>
-          `;
-        }).join('');
+    // ===========================================================================
+    // SUBPÁGINA AS 8 MATÉRIAS (CORES MANTIDAS)
+    // ===========================================================================
+    function renderSubjectsGrid() {
+      if (activeSubjectDetailId) {
+        document.getElementById('subjectsGridContainer').classList.add('hidden');
+        document.getElementById('subjectSingleView').classList.remove('hidden');
+        renderSubjectSingleView(activeSubjectDetailId);
+        return;
       }
+      document.getElementById('subjectsGridContainer').classList.remove('hidden');
+      document.getElementById('subjectSingleView').classList.add('hidden');
+
+      const grid = document.getElementById('subjectsGridContainer');
+      grid.innerHTML = db.subjects.map(s => {
+        const count = db.tasks.filter(t => t.subjectId === s.id && t.status !== 'done').length;
+        return `
+          <div onclick="openSubjectSingleView('${s.id}')" class="bg-gdark-surface border border-gdark-border hover:border-indigo-500/50 rounded-3xl p-4 cursor-pointer space-y-2.5 shadow-md">
+            <div class="flex items-center justify-between">
+              <h3 class="text-base font-extrabold text-white">${s.name}</h3>
+              <span class="text-xs font-bold px-2.5 py-0.5 rounded-full ${count > 0 ? 'bg-amber-500/20 text-amber-300' : 'bg-emerald-500/20 text-emerald-300'}">${count} pend.</span>
+            </div>
+            <div class="text-xs text-gdark-muted">Prof(a). <strong class="text-white">${s.prof}</strong> • ${s.workload}h</div>
+            <div class="text-xs bg-gdark-bg border border-gdark-border rounded-xl px-3 py-2 text-gdark-text">
+              📊 Provas: <strong>${s.exams}</strong>
+            </div>
+            <div class="flex items-center justify-between text-xs font-bold pt-1">
+              <span class="uppercase ${s.importance === 'alto' ? 'text-emerald-400' : s.importance === 'medio' ? 'text-amber-400' : 'text-rose-400'}">Imp: ${s.importance}</span>
+              <span class="uppercase text-purple-300">Dif: ${s.difficulty}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
-    function openSubjectDetail(subjId) {
-      currentOpenSubjectId = subjId;
-      renderSubjectsPage();
+    function openSubjectSingleView(subjId) {
+      activeSubjectDetailId = subjId;
+      renderSubjectsGrid();
     }
 
-    function closeSubjectDetail() {
-      currentOpenSubjectId = null;
-      renderSubjectsPage();
+    function closeSubjectSingleView() {
+      activeSubjectDetailId = null;
+      renderSubjectsGrid();
     }
 
-    function renderSubjectDetail(subjId) {
-      const s = state.subjects.find(x => x.id === subjId);
+    function renderSubjectSingleView(subjId) {
+      const s = db.subjects.find(x => x.id === subjId);
       if (!s) return;
-
-      document.getElementById('subjectDetailHeader').innerHTML = `
+      document.getElementById('subjectSingleHeader').innerHTML = `
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-lg font-extrabold text-white">${s.name}</h2>
-            <p class="text-xs text-notion-muted">Professor(a): ${s.prof} • Carga Horária Semanal: ${s.workload}</p>
-          </div>
-          <div class="text-right text-xs">
-            <span class="px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 font-bold">Provas: ${s.exams}</span>
+            <h2 class="text-xl font-extrabold text-white">${s.name}</h2>
+            <p class="text-xs text-gdark-muted">Prof(a). ${s.prof} • Critério: ${s.exams}</p>
           </div>
         </div>
       `;
+      document.getElementById('btnAddTaskForSubject').onclick = () => openTaskModal(s.id);
 
-      document.getElementById('btnAddSubjectTask').onclick = () => openNewTaskModal(s.id);
-
-      const subjTasks = getSortedTasks(s.id, true);
-      const listEl = document.getElementById('subjectSpecificTasksList');
-      if (subjTasks.length === 0) {
-        listEl.innerHTML = `<div class="text-xs text-notion-muted py-4 text-center">Nenhuma tarefa cadastrada nesta matéria.</div>`;
-      } else {
-        listEl.innerHTML = subjTasks.map(t => `
-          <div class="flex items-center justify-between p-2.5 rounded-xl bg-[#161616] border border-notion-border">
-            <div class="flex items-center gap-2.5">
-              <input type="checkbox" ${t.status === 'done' ? 'checked' : ''} onchange="completeTask('${t.id}')" class="w-4 h-4 rounded" />
-              <div>
-                <div class="text-xs font-bold ${t.status === 'done' ? 'line-through text-notion-muted' : 'text-white'}">${t.title}</div>
-                <div class="text-[10px] text-notion-muted">Prioridade: ${t.priority.toUpperCase()} • Prazo: ${formatDateBR(t.due)} • ${t.estMins || 50} min</div>
-              </div>
-            </div>
-            <button onclick="deleteTask('${t.id}')" class="text-notion-muted hover:text-rose-400 px-2">&times;</button>
+      const tasks = getSortedStudyTasks(s.id, true);
+      document.getElementById('subjectSingleTasks').innerHTML = tasks.map(t => `
+        <div class="p-3 rounded-2xl bg-gdark-bg border border-gdark-border flex items-center justify-between">
+          <div>
+            <div class="text-sm font-bold ${t.status === 'done' ? 'line-through text-gdark-muted' : 'text-white'}">${t.title}</div>
+            <div class="text-xs text-gdark-muted">${t.priority.toUpperCase()} • 📅 ${formatBrDate(t.due)}</div>
           </div>
-        `).join('');
-      }
+          <button onclick="toggleTaskDone('${t.id}')" class="px-3 py-1.5 rounded-xl text-xs font-bold ${t.status === 'done' ? 'bg-gdark-pill text-gdark-muted' : 'bg-emerald-600 text-white'}">
+            ${t.status === 'done' ? 'Feito ✓' : 'Concluir'}
+          </button>
+        </div>
+      `).join('');
 
-      const notesEl = document.getElementById('subjectClassNotesList');
-      notesEl.innerHTML = (s.notes || []).map((n, idx) => `
-        <div class="flex items-center justify-between p-2.5 rounded-xl bg-[#161616] border border-notion-border text-xs">
-          <span class="text-notion-text">📄 ${n}</span>
-          <button onclick="removeSubjectNote('${s.id}', ${idx})" class="text-notion-muted hover:text-rose-400">&times;</button>
+      document.getElementById('subjectSingleNotes').innerHTML = (s.notes || []).map((n, i) => `
+        <div class="p-3 rounded-2xl bg-gdark-bg border border-gdark-border flex items-center justify-between text-sm">
+          <span>📄 ${n}</span>
+          <button onclick="deleteSubjectNote('${s.id}', ${i})" class="text-gdark-muted hover:text-rose-400">&times;</button>
         </div>
       `).join('');
     }
 
-    function addSubjectClassNote() {
-      if (!currentOpenSubjectId) return;
-      const text = prompt('Digite o título/resumo da aula (ex: Aula 5 - Integração por partes):');
-      if (!text) return;
-      const s = state.subjects.find(x => x.id === currentOpenSubjectId);
+    function promptNewClassNote() {
+      const txt = prompt('Resumo/tópico da aula:');
+      if (!txt || !activeSubjectDetailId) return;
+      const s = db.subjects.find(x => x.id === activeSubjectDetailId);
       if (s) {
-        s.notes.push(text.trim());
-        saveState();
-        renderSubjectDetail(currentOpenSubjectId);
+        s.notes.push(txt.trim());
+        saveHubDb();
+        renderSubjectSingleView(activeSubjectDetailId);
       }
     }
 
-    function removeSubjectNote(subjId, idx) {
-      const s = state.subjects.find(x => x.id === subjId);
+    function deleteSubjectNote(subjId, idx) {
+      const s = db.subjects.find(x => x.id === subjId);
       if (s) {
         s.notes.splice(idx, 1);
-        saveState();
-        renderSubjectDetail(subjId);
+        saveHubDb();
+        renderSubjectSingleView(subjId);
       }
     }
 
-    // =========================================================================
-    // MODAIS E UTILITÁRIOS
-    // =========================================================================
-    function populateSubjectSelect() {
-      const sel = document.getElementById('modalTaskSubject');
-      sel.innerHTML = state.subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+    // ===========================================================================
+    // CONFIGURAÇÕES GLOBAIS (SALVOS, MEMÓRIA NOTEBOOKLM E AVISOS EDITÁVEIS)
+    // ===========================================================================
+    function openGlobalSettings(defaultTab = 'config') {
+      document.getElementById('cfgApiKey').value = localStorage.getItem(API_KEY_STORAGE) || '';
+      document.getElementById('cfgNotebookContext').value = db.contextMemory || DEFAULT_CONTEXT_MEMORY;
+      document.getElementById('cfgPhone').value = db.phone || '';
+      document.getElementById('cfgNtfyTopic').value = db.ntfyTopic || '';
+      renderSavedNewsInModal();
+      renderRemindersEditor();
+      switchSettingsTab(defaultTab);
+      document.getElementById('globalSettingsModal').classList.remove('hidden');
     }
 
-    function openNewTaskModal(defaultSubjId) {
-      if (defaultSubjId) document.getElementById('modalTaskSubject').value = defaultSubjId;
-      document.getElementById('modalTaskTitle').value = '';
-      document.getElementById('modalTaskDue').value = getTodayISO();
-      document.getElementById('newTaskModal').classList.remove('hidden');
+    function closeGlobalSettings() {
+      document.getElementById('globalSettingsModal').classList.add('hidden');
     }
 
-    function closeNewTaskModal() {
-      document.getElementById('newTaskModal').classList.add('hidden');
+    function switchSettingsTab(tab) {
+      ['config', 'saved', 'notifications'].forEach(t => {
+        document.getElementById(`settingsPane-${t}`).classList.toggle('hidden', t !== tab);
+        document.getElementById(`setTab-${t}`).className = (t === tab)
+          ? 'flex-1 py-2 rounded-xl bg-gdark-pill text-white'
+          : 'flex-1 py-2 rounded-xl text-gdark-muted';
+      });
     }
 
-    function saveModalTask() {
-      const subjectId = document.getElementById('modalTaskSubject').value;
-      const title = document.getElementById('modalTaskTitle').value.trim();
-      const priority = document.getElementById('modalTaskPriority').value;
-      const due = document.getElementById('modalTaskDue').value || getTodayISO();
-      const estMins = Number(document.getElementById('modalTaskMins').value) || 50;
+    function saveGlobalConfig() {
+      const k = document.getElementById('cfgApiKey').value.trim();
+      if (k) localStorage.setItem(API_KEY_STORAGE, k);
+      db.contextMemory = document.getElementById('cfgNotebookContext').value.trim();
+      saveHubDb();
+      alert('Configurações e Memória Sincronizada salvas!');
+    }
 
-      if (!title) {
-        alert('Digite a descrição da tarefa.');
+    function renderSavedNewsInModal() {
+      const box = document.getElementById('savedNewsContainer');
+      if (db.savedNews.length === 0) {
+        box.innerHTML = `<div class="text-center py-6 text-sm text-gdark-muted">Nenhuma notícia curtida com ❤️ ainda.</div>`;
         return;
       }
+      box.innerHTML = db.savedNews.map(n => `
+        <div class="p-3 rounded-2xl bg-gdark-bg border border-gdark-border flex items-center justify-between gap-2">
+          <a href="${n.url}" target="_blank" class="text-sm font-bold text-white hover:text-blue-400 line-clamp-2">${n.title}</a>
+          <button onclick="toggleLikeNews('${n.id}'); renderSavedNewsInModal();" class="text-rose-400 text-sm shrink-0">Remover</button>
+        </div>
+      `).join('');
+    }
 
-      state.tasks.push({
-        id: 't_' + Date.now(),
-        subjectId,
-        title,
-        priority,
-        due,
-        status: 'todo',
-        estMins
+    function renderRemindersEditor() {
+      const list = document.getElementById('customRemindersEditorList');
+      list.innerHTML = db.reminders.map((r, i) => `
+        <div class="bg-gdark-bg border border-gdark-border rounded-2xl p-3 space-y-2">
+          <div class="flex items-center gap-2">
+            <input type="time" id="remTime_${i}" value="${r.time}" class="bg-gdark-surface border border-gdark-border rounded-xl px-2 py-1 text-white font-bold" />
+            <input type="text" id="remTitle_${i}" value="${r.title}" class="flex-1 bg-gdark-surface border border-gdark-border rounded-xl px-2.5 py-1 text-white font-bold" />
+          </div>
+          <textarea id="remMsg_${i}" rows="2" class="w-full bg-gdark-surface border border-gdark-border rounded-xl p-2 text-gdark-text">${r.msg}</textarea>
+        </div>
+      `).join('');
+    }
+
+    function saveNotificationsConfig() {
+      db.phone = document.getElementById('cfgPhone').value.trim();
+      db.ntfyTopic = document.getElementById('cfgNtfyTopic').value.trim();
+      db.reminders.forEach((r, i) => {
+        r.time = document.getElementById(`remTime_${i}`).value;
+        r.title = document.getElementById(`remTitle_${i}`).value;
+        r.msg = document.getElementById(`remMsg_${i}`).value;
       });
-
-      saveState();
-      closeNewTaskModal();
-      renderAll();
+      saveHubDb();
+      alert('Avisos personalizados salvos!');
     }
 
-    function openSettingsModal() {
-      document.getElementById('settingsApiKey').value = localStorage.getItem(API_KEY_STORAGE) || '';
-      document.getElementById('settingsIcsUrl').value = state.icsUrl || DEFAULT_ICS_URL;
-      document.getElementById('settingsModal').classList.remove('hidden');
+    function requestBrowserNotificationPerm() {
+      if (!('Notification' in window)) {
+        alert('Este navegador não suporta notificações.');
+        return;
+      }
+      Notification.requestPermission().then(p => {
+        alert(p === 'granted' ? 'Notificações ativadas com sucesso!' : 'Permissão negada pelo navegador.');
+      });
     }
 
-    function closeSettingsModal() {
-      document.getElementById('settingsModal').classList.add('hidden');
+    async function sendTestNotificationNow() {
+      const rem = db.reminders[0];
+      // 1. Adiciona ao Chat do Topo
+      db.topChat.push({ role: 'ai', text: `🔔 **${rem.title} (${rem.time}):**\n${rem.msg}` });
+      saveHubDb();
+      renderTopChatHistory();
+
+      // 2. Dispara Notificação Nativa do Sistema se permitido
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(rem.title, { body: rem.msg, icon: './icon-192.png' });
+      }
+
+      // 3. Se configurou tópico ntfy.sh, dispara Push em segundo plano
+      if (db.ntfyTopic) {
+        fetch(`https://ntfy.sh/${encodeURIComponent(db.ntfyTopic)}`, {
+          method: 'POST',
+          body: `${rem.title}: ${rem.msg}`
+        }).catch(() => {});
+      }
+      alert('Aviso enviado para o Chat Principal e Notificação disparada!');
     }
 
-    function saveSettingsModal() {
-      const key = document.getElementById('settingsApiKey').value.trim();
-      if (key) localStorage.setItem(API_KEY_STORAGE, key);
-      state.icsUrl = document.getElementById('settingsIcsUrl').value.trim() || DEFAULT_ICS_URL;
-      saveState();
-      closeSettingsModal();
-      alert('Configurações salvas!');
+    // MODAL NOVA TAREFA
+    function openTaskModal(defaultSubj) {
+      const sel = document.getElementById('newTaskSubject');
+      sel.innerHTML = db.subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+      if (defaultSubj && defaultSubj !== 'prova') sel.value = defaultSubj;
+      document.getElementById('newTaskTitle').value = defaultSubj === 'prova' ? 'Prova / Entrega: ' : '';
+      document.getElementById('newTaskDue').value = new Date().toISOString().split('T')[0];
+      document.getElementById('taskModal').classList.remove('hidden');
     }
 
-    function getTodayISO() {
-      const now = new Date();
-      const offset = now.getTimezoneOffset() * 60000;
-      return new Date(now.getTime() - offset).toISOString().split('T')[0];
+    function closeTaskModal() {
+      document.getElementById('taskModal').classList.add('hidden');
     }
 
-    function formatDateBR(isoStr) {
-      if (!isoStr) return 'Sem data';
-      const parts = isoStr.split('-');
-      return parts.length === 3 ? `${parts[2]}/${parts[1]}` : isoStr;
+    function saveNewTaskFromModal() {
+      const subjectId = document.getElementById('newTaskSubject').value;
+      const title = document.getElementById('newTaskTitle').value.trim();
+      const priority = document.getElementById('newTaskPriority').value;
+      const due = document.getElementById('newTaskDue').value;
+      const estMins = Number(document.getElementById('newTaskMins').value) || 50;
+      if (!title) return;
+      db.tasks.push({ id: 't_' + Date.now(), subjectId, title, priority, due, status: 'todo', estMins });
+      saveHubDb();
+      closeTaskModal();
+      renderEverything();
     }
 
-    function exportStudyBackup() {
-      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
+    function formatBrDate(iso) {
+      if (!iso) return '';
+      const p = iso.split('-');
+      return p.length === 3 ? `${p[2]}/${p[1]}` : iso;
+    }
+
+    function exportAllAppData() {
+      const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
       const a = document.createElement('a');
-      a.href = url;
-      a.download = `backup-estudos-ufu-${getTodayISO()}.json`;
+      a.href = URL.createObjectURL(blob);
+      a.download = 'backup-ufu-hub.json';
       a.click();
     }
   </script>
